@@ -1,0 +1,200 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Other Scripts &mdash; leiden_cleanup 1.0.3 documentation</title>
+    
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '1.0.3',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="leiden_cleanup 1.0.3 documentation" href="index.html" />
+    <link rel="next" title="Data" href="data.html" />
+    <link rel="prev" title="Driver Scripts" href="driver_scripts.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="data.html" title="Data"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="driver_scripts.html" title="Driver Scripts"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">leiden_cleanup 1.0.3 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="other-scripts">
+<span id="id1"></span><h1>Other Scripts<a class="headerlink" href="#other-scripts" title="Permalink to this headline">¶</a></h1>
+<p>These scripts are called in sequence by the example driver script - <tt class="docutils literal"><span class="pre">run_all.py</span></tt>. However, they are also callable
+individually. Note that the python packages included with this project can also be used to write
+entirely new scripts if needed. Feel free to expand and write your own tools!</p>
+<div class="admonition tip">
+<p class="first admonition-title">Tip</p>
+<p class="last">Note all scripts are made with argsparse, so contain built-in help. To access help simply execute: <tt class="docutils literal"><span class="pre">python</span> <span class="pre">&lt;script_name&gt;.py</span> <span class="pre">--help</span></tt></p>
+</div>
+<div class="admonition important">
+<p class="first admonition-title">Important</p>
+<p class="last">The leiden package must be installed or on your PYTHONPATH to run these scripts.</p>
+</div>
+<div class="section" id="extract-data-py">
+<h2>extract_data.py<a class="headerlink" href="#extract-data-py" title="Permalink to this headline">¶</a></h2>
+<p>extract_data.py allows raw data from the any leiden open variation database installation to be downloaded
+and saved to text files (one per gene). There are options to allow either data from all genes or a specific list of genes
+to be downloaded as needed. It also allows users to print a list of all available genes at a given URL, which is useful
+if you want to check what is available.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Note that both LOVD versions 2 and 3 are supported for this script.</p>
+</div>
+<div class="section" id="example-usage">
+<h3>Example Usage<a class="headerlink" href="#example-usage" title="Permalink to this headline">¶</a></h3>
+<p>Download data for all genes from a given url to a specified output directory:</p>
+<div class="highlight-bash"><div class="highlight"><pre>python extract_data.py --all --leiden_url http://www.dmd.nl/nmdb2/ --output_directory my_directory
+</pre></div>
+</div>
+<p>Download a list of specified genes from a given url to a specified output directory:</p>
+<div class="highlight-bash"><div class="highlight"><pre>python extract_data.py --leiden_url http://www.dmd.nl/nmdb2/ --output_directory my_directory --gene_list ACTA1 DYSF
+</pre></div>
+</div>
+<p>Print a list of available genes at a specified URL:</p>
+<div class="highlight-bash"><div class="highlight"><pre>python extract_data.py --genes_available --leiden_url http://www.dmd.nl/nmdb2/
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="generate-annotated-vcf-py">
+<h2>generate_annotated_vcf.py<a class="headerlink" href="#generate-annotated-vcf-py" title="Permalink to this headline">¶</a></h2>
+<p>This script utilizes VEP to annotate variants and output a VCF file (&lt;original_file_name&gt;.vcf). The original data from tables of data downloaded from
+LOVD are also added to the VCF in a format similar to VEP&#8217;s CSQ tag in VCF annotation. Variants that could not be converted
+to VCF format are not saved to output file.</p>
+<div class="section" id="id2">
+<h3>Example Usage<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h3>
+<p>Run on list of files contained in a file (improved efficiency over multiple script calls):</p>
+<div class="highlight-bash"><div class="highlight"><pre>python generate_annotated_vcfs.py -f file_names.txt
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="validate-annotated-vcfs-py">
+<h2>validate_annotated_vcfs.py<a class="headerlink" href="#validate-annotated-vcfs-py" title="Permalink to this headline">¶</a></h2>
+<p>This script takes either a single file or a list of annotated VCF files as input and outputs a single VCF file with
+all concordant variants from all input files. Variants that are not concordant are saved to a separate VCF.</p>
+<p>How is concordance determined?</p>
+<p>VEP provides a HGVS protein change prediction, which is compared to the protein change reported in LOVD. If neither
+LOVD or VEP report a protein change (intronic variants, splice variants, etc.), we instead... TODO</p>
+<div class="section" id="id3">
+<h3>Example Usage<a class="headerlink" href="#id3" title="Permalink to this headline">¶</a></h3>
+<p>Using a file containing names of all input files:</p>
+<div class="highlight-bash"><div class="highlight"><pre>python extract_data.py --output_file output.vcf --discordant_output_file discordant.vcf -f file_list.txt
+</pre></div>
+</div>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Other Scripts</a><ul>
+<li><a class="reference internal" href="#extract-data-py">extract_data.py</a><ul>
+<li><a class="reference internal" href="#example-usage">Example Usage</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#generate-annotated-vcf-py">generate_annotated_vcf.py</a><ul>
+<li><a class="reference internal" href="#id2">Example Usage</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#validate-annotated-vcfs-py">validate_annotated_vcfs.py</a><ul>
+<li><a class="reference internal" href="#id3">Example Usage</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="driver_scripts.html"
+                        title="previous chapter">Driver Scripts</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="data.html"
+                        title="next chapter">Data</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/other_scripts.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="data.html" title="Data"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="driver_scripts.html" title="Driver Scripts"
+             >previous</a> |</li>
+        <li><a href="index.html">leiden_cleanup 1.0.3 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2014, Andrew Hill.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
+    </div>
+  </body>
+</html>

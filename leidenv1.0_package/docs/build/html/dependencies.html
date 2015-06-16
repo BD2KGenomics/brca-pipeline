@@ -1,0 +1,227 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Installation and Dependencies &mdash; leiden_cleanup 1.0.3 documentation</title>
+    
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '1.0.3',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="leiden_cleanup 1.0.3 documentation" href="index.html" />
+    <link rel="next" title="Variant Effect Predictor" href="vep.html" />
+    <link rel="prev" title="Overview" href="overview.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="vep.html" title="Variant Effect Predictor"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="overview.html" title="Overview"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">leiden_cleanup 1.0.3 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="installation-and-dependencies">
+<span id="dependencies"></span><h1>Installation and Dependencies<a class="headerlink" href="#installation-and-dependencies" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="installation-for-general-use-no-development">
+<h2>Installation for General Use (No Development)<a class="headerlink" href="#installation-for-general-use-no-development" title="Permalink to this headline">¶</a></h2>
+<p>While this project ideally could be installed using a default installation, some dependencies do not always install correctly.</p>
+<p>In the next sections I will step through the installation process for the two finicky dependencies.</p>
+<div class="admonition important">
+<p class="first admonition-title">Important</p>
+<p class="last">Install the dependencies below first and then install leiden.</p>
+</div>
+<p>Once these dependencies are installed, you can do any of the following:</p>
+<p>Clone:</p>
+<div class="highlight-bash"><div class="highlight"><pre>git clone git@github.com:andrewhill157/leiden.git
+</pre></div>
+</div>
+<p>Clone and Install from Source:</p>
+<div class="highlight-bash"><div class="highlight"><pre>git clone git@github.com:andrewhill157/leiden.git
+<span class="nb">cd </span>leiden
+python setup.py install leiden
+</pre></div>
+</div>
+<p>All project dependencies are listed in requirements.txt. If you simply want to install the dependencies for the project
+without installing the package itself run the command from the package root directory:</p>
+<div class="highlight-bash"><div class="highlight"><pre>pip install -r requirements.txt
+</pre></div>
+</div>
+<p>If you want to contribute to the project via Github, please see the <a class="reference internal" href="contributing.html#contributing"><em>Contributing to Leiden</em></a> page.</p>
+<div class="section" id="pygr">
+<h3>pygr<a class="headerlink" href="#pygr" title="Permalink to this headline">¶</a></h3>
+<p>pygr requires that you have bsddb3 and Berkeley DB installed. This can be installed using homebrew:</p>
+<div class="highlight-bash"><div class="highlight"><pre>brew install berkeley-db --without-java
+</pre></div>
+</div>
+<p># Note prefix to pip not required on Broad cluster
+sudo BERKELEYDB_DIR=/usr/local/Cellar/berkeley-db/5.3.15/ pip install bsddb3</p>
+<p>Once bbd3 and Berkeley DB are installed, you should be able to install pygr with pip install pygr. If there are still errors,
+the following may correct the problem.</p>
+<div class="highlight-bash"><div class="highlight"><pre><span class="nb">export </span><span class="nv">CFLAGS</span><span class="o">=</span>-Qunused-arguments
+<span class="nb">export </span><span class="nv">CPPFLAGS</span><span class="o">=</span>-Qunused-arguments
+pip install pygr
+</pre></div>
+</div>
+<p>I have not encountered any additional problems installing pygr.</p>
+</div>
+<div class="section" id="hgvs">
+<h3>hgvs<a class="headerlink" href="#hgvs" title="Permalink to this headline">¶</a></h3>
+<p>HGVS must be installed by cloning the Github repository and installing from source:</p>
+<div class="highlight-bash"><div class="highlight"><pre>git clone git@github.com:counsyl/hgvs.git
+<span class="nb">cd </span>hgvs
+python setup.py install
+<span class="nb">cd</span> ..
+rm -rf hgvs
+</pre></div>
+</div>
+<p>I have not encountered any additional problems installing hgvs.</p>
+<div class="admonition important">
+<p class="first admonition-title">Important</p>
+<p class="last">Unfortunately, this tool depends on a relatively large file that I cannot easily host on Github. This is normally housed
+in the folder /leiden/remapping/resources/. It is a human genome reference sequence (hg19.fa) I have temporarily hosted a
+copy at at: <a class="reference external" href="http://www.broadinstitute.org/~ahill">http://www.broadinstitute.org/~ahill</a>. This file will need to decompressed using gunzip and placed in
+/leiden/remapping/resources/. The first time this package is used, two additional files will be generated (takes some time).
+Subsequent runs will not require this process to be repeated.</p>
+</div>
+</div>
+<div class="section" id="other-errors">
+<h3>Other Errors<a class="headerlink" href="#other-errors" title="Permalink to this headline">¶</a></h3>
+<p>I have also seen an error stating that pg_config executable could not be found. This seems to be an executable included
+with PostgreSQL, which can be downloaded with homebrew, etc.:</p>
+<div class="highlight-bash"><div class="highlight"><pre>brew install postgresql
+</pre></div>
+</div>
+</div>
+<div class="section" id="variant-effect-predictor">
+<h3>Variant Effect Predictor<a class="headerlink" href="#variant-effect-predictor" title="Permalink to this headline">¶</a></h3>
+<p>Variant Effect Predictor (VEP) is required to use generate_annotated_vcf.py and the annotate_vcf module. The downstream script validate_annotated_vcfs.py
+depends on the annotations that VEP provides to perform validation. Since run_all.py calls these scripts, it also requires VEP. See <a class="reference internal" href="vep.html#vep"><em>Variant Effect Predictor</em></a> for more info.</p>
+<p>The extract_data.py and the other packages in leiden can be used without VEP.</p>
+<div class="admonition important">
+<p class="first admonition-title">Important</p>
+<p class="last">VEP must be installed and on your path to generate and validate annotated VCF files.</p>
+</div>
+</div>
+</div>
+<div class="section" id="development-installation">
+<h2>Development Installation<a class="headerlink" href="#development-installation" title="Permalink to this headline">¶</a></h2>
+<p>If you would like to extend or modify the existing code-base or scripts while still having the package installed,
+you can install in editable or development mode. This differs slightly from the default installation mode.</p>
+<p>The easiest way to do this is to install from cloned source.</p>
+<div class="highlight-bash"><div class="highlight"><pre>git clone git@github.com:andrewhill157/leiden.git
+<span class="nb">cd </span>leiden
+python setup.py develop
+</pre></div>
+</div>
+<p>Either of these methods will make the leiden packages accessible by python, but allow you to edit and call the modified
+source without re-installing the package. Note that the dependencies must still be installed according to instructions in
+the Installation for General Use section.</p>
+<p>If you want to contribute to the project via Github, please see the <a class="reference internal" href="contributing.html#contributing"><em>Contributing to Leiden</em></a> page.</p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Installation and Dependencies</a><ul>
+<li><a class="reference internal" href="#installation-for-general-use-no-development">Installation for General Use (No Development)</a><ul>
+<li><a class="reference internal" href="#pygr">pygr</a></li>
+<li><a class="reference internal" href="#hgvs">hgvs</a></li>
+<li><a class="reference internal" href="#other-errors">Other Errors</a></li>
+<li><a class="reference internal" href="#variant-effect-predictor">Variant Effect Predictor</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#development-installation">Development Installation</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="overview.html"
+                        title="previous chapter">Overview</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="vep.html"
+                        title="next chapter">Variant Effect Predictor</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/dependencies.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="vep.html" title="Variant Effect Predictor"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="overview.html" title="Overview"
+             >previous</a> |</li>
+        <li><a href="index.html">leiden_cleanup 1.0.3 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2014, Andrew Hill.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
+    </div>
+  </body>
+</html>

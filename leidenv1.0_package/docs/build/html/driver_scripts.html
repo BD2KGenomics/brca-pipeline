@@ -1,0 +1,178 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Driver Scripts &mdash; leiden_cleanup 1.0.3 documentation</title>
+    
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '1.0.3',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="leiden_cleanup 1.0.3 documentation" href="index.html" />
+    <link rel="next" title="Other Scripts" href="other_scripts.html" />
+    <link rel="prev" title="Modules" href="packages.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="other_scripts.html" title="Other Scripts"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="packages.html" title="Modules"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">leiden_cleanup 1.0.3 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="driver-scripts">
+<span id="id1"></span><h1>Driver Scripts<a class="headerlink" href="#driver-scripts" title="Permalink to this headline">¶</a></h1>
+<p>In addition to the individual scripts installed with this package, I have also included an example driver script to run
+the entire pipeline.</p>
+<div class="admonition important">
+<p class="first admonition-title">Important</p>
+<p class="last">This script runs annotations serially with Variant Effect Predictor, which can take some time to execute. If you
+have access to a distributed computing cluster, you may want to develop your own driver script that runs the
+annotation portion of the pipeline in parallel.</p>
+</div>
+<div class="admonition tip">
+<p class="first admonition-title">Tip</p>
+<p>All scripts are implemented using argparse and have built-in help, which accessible via:</p>
+<div class="last highlight-bash"><div class="highlight"><pre>python &lt;script_name&gt;.py --help
+</pre></div>
+</div>
+</div>
+<div class="section" id="run-all-py">
+<h2>run_all.py<a class="headerlink" href="#run-all-py" title="Permalink to this headline">¶</a></h2>
+<p>run_all.py runs the full data extraction and validation process, producing a VCF file with only validated variants.
+Discordant variants are saved a separate VCF. See <a class="reference internal" href="data.html#data"><em>Data</em></a> for more information.</p>
+<div class="section" id="example-usage">
+<h3>Example Usage<a class="headerlink" href="#example-usage" title="Permalink to this headline">¶</a></h3>
+<p>There are a few use-cases for run_all.py:</p>
+<ol class="arabic simple">
+<li>You are starting completely from scratch (no data has been downloaded from LOVD)</li>
+</ol>
+<div class="highlight-bash"><div class="highlight"><pre>python run_all.py -u http://www.dmd.nl/nmdb2/ -output_directory my_output_directory
+</pre></div>
+</div>
+<p>This will download data from all genes on the specifed LOVD URL, saving one .txt file (<tt class="docutils literal"><span class="pre">&lt;gene_name&gt;.txt</span></tt>) with raw data as
+well as one VCF file per gene (<tt class="docutils literal"><span class="pre">&lt;gene_name&gt;_ANNOTATED.vcf</span></tt>) with variants in VCF format and annotations (Variant Effect Predictor
+along with original data from LOVD table).</p>
+<p>Note that files are not saved for genes with no listed variants at the specified URL. Variants that fail to remap to VCF
+format are saved to <tt class="docutils literal"><span class="pre">&lt;gene_name&gt;_remapping_errors.log</span></tt> in their original LOVD table format.</p>
+<p>2. You already have the txt files containing raw data from LOVD, but want to re-run the rest of the process. Note that
+this was primarily useful during development, but may still have some utility for others.</p>
+<div class="highlight-bash"><div class="highlight"><pre>python run_all.py --no_download -output_directory my_output_directory
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">This assumes that the .txt files containing data extracted from LOVD are located in the specified output directory.</p>
+</div>
+<p>3. By default, run_all will not overwrite any existing annotated VCF files. This can be useful if annotation partially completed
+and you want to resume, etc. To force an overwrite:</p>
+<div class="highlight-bash"><div class="highlight"><pre>python run_all.py --force_overwrite -output_directory my_output_directory
+<span class="c"># OR</span>
+python run_all.py --no_download -output_directory my_output_directory
+</pre></div>
+</div>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Driver Scripts</a><ul>
+<li><a class="reference internal" href="#run-all-py">run_all.py</a><ul>
+<li><a class="reference internal" href="#example-usage">Example Usage</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="packages.html"
+                        title="previous chapter">Modules</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="other_scripts.html"
+                        title="next chapter">Other Scripts</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/driver_scripts.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="other_scripts.html" title="Other Scripts"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="packages.html" title="Modules"
+             >previous</a> |</li>
+        <li><a href="index.html">leiden_cleanup 1.0.3 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2014, Andrew Hill.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
+    </div>
+  </body>
+</html>

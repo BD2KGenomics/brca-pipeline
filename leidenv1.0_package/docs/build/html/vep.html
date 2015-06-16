@@ -1,0 +1,172 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Variant Effect Predictor &mdash; leiden_cleanup 1.0.3 documentation</title>
+    
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '1.0.3',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="leiden_cleanup 1.0.3 documentation" href="index.html" />
+    <link rel="next" title="Contributing to Leiden" href="contributing.html" />
+    <link rel="prev" title="Installation and Dependencies" href="dependencies.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="contributing.html" title="Contributing to Leiden"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="dependencies.html" title="Installation and Dependencies"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">leiden_cleanup 1.0.3 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="variant-effect-predictor">
+<span id="vep"></span><h1>Variant Effect Predictor<a class="headerlink" href="#variant-effect-predictor" title="Permalink to this headline">¶</a></h1>
+<p>In order to run the annotation and validation software in leiden, you must have Variant Effect Predictor (VEP) installed and available on your PATH.</p>
+<div class="admonition important">
+<p class="first admonition-title">Important</p>
+<p class="last">Make sure variant_effect_predictor.pl is on your PATH!</p>
+</div>
+<p>Currently, the parameters for VEP are hard-coded and as follows:</p>
+<div class="highlight-bash"><div class="highlight"><pre>--vcf
+--cache
+--fork 4
+--host useastdb.ensembl.org
+--format vcf
+--force_overwrite
+--everything
+--compress <span class="s2">&quot;gunzip -c&quot;</span>
+</pre></div>
+</div>
+<p>This means that you will also need the human cache and reference sequence available. See <a class="reference external" href="http://useast.ensembl.org/info/docs/">VEP Documentation</a> for more info.</p>
+<p>Future improvements may seek to allow tweaking of parameters using a config file. If you wish to modify this function to
+in the meantime, please ensure that &#8211;hgvs is used, as this is used for validation purposes in the scripts that are
+provided with this package.</p>
+<div class="section" id="optimizing-vep">
+<h2>Optimizing VEP<a class="headerlink" href="#optimizing-vep" title="Permalink to this headline">¶</a></h2>
+<p>While not a topic specific to this package, I would like to point out a few adjustments that substantially speed up
+VEP annotation. These changes can make an enormous different in the runtime.</p>
+<blockquote>
+<div><ul class="simple">
+<li>Download relevant cache (27) and a .fasta file to use <tt class="docutils literal"><span class="pre">--cache</span></tt></li>
+<li>Use <tt class="docutils literal"><span class="pre">--host</span> <span class="pre">useastdb.ensembl.org</span></tt> (USA users)</li>
+<li>use <tt class="docutils literal"><span class="pre">--fork</span> <span class="pre">4</span></tt></li>
+<li>Convert the cache using tabix (see <a class="reference external" href="http://useast.ensembl.org/info/docs/tools/vep/script/vep_cache.html">Databases and Caches</a> for more info)</li>
+</ul>
+</div></blockquote>
+<p>Unfortunately <tt class="docutils literal"><span class="pre">--hgvs</span></tt> (required for validation) requires internet access, so some database connection must be made. Specifying
+the US mirror as the host (as specified above) greatly speeds up runtime because of this.</p>
+<div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p class="last">Failing to optimize your VEP installation will result in prohibitively long execution time.</p>
+</div>
+</div>
+<div class="section" id="remapping-hgvs-with-vep">
+<h2>Remapping HGVS with VEP<a class="headerlink" href="#remapping-hgvs-with-vep" title="Permalink to this headline">¶</a></h2>
+<p>Note that it is possible to use HGVS formatted variants as input to VEP. At the time this package was developed, this was
+incredibly slow. For this reason, I have used the third-party python module (<a class="reference external" href="https://github.com/counsyl/hgvs">HGVS</a>) to
+convert variants to VCF format prior to annotation.</p>
+<p>This package is very fast and produced very comparable results to those of VEP and other available tools. This tool is also
+useful for stand-alone HGVS to VCF (or vice versa) conversion. The leiden.remapping module provides functions for remapping.</p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Variant Effect Predictor</a><ul>
+<li><a class="reference internal" href="#optimizing-vep">Optimizing VEP</a></li>
+<li><a class="reference internal" href="#remapping-hgvs-with-vep">Remapping HGVS with VEP</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="dependencies.html"
+                        title="previous chapter">Installation and Dependencies</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="contributing.html"
+                        title="next chapter">Contributing to Leiden</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/vep.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="contributing.html" title="Contributing to Leiden"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="dependencies.html" title="Installation and Dependencies"
+             >previous</a> |</li>
+        <li><a href="index.html">leiden_cleanup 1.0.3 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2014, Andrew Hill.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
+    </div>
+  </body>
+</html>
