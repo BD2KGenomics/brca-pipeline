@@ -344,7 +344,7 @@ class GeneData:
             label = 'protein_change'
         elif 'genomic' in label:
             label = 'dna_change_genomic'
-        elif 'dna' in label:
+        elif ('dna' in label) and not ('bic' in label):
             label = 'dna_change'
         
         # Some databases return bad headers
@@ -397,7 +397,7 @@ class GeneData:
         print('total_variant_count: ', total_variant_count)
 
         # Calculate the number of pages website will use to present data
-        variants_per_page = 250  # max allowed value
+        variants_per_page = 1000  # max allowed value
         total_pages = int(math.ceil(float(total_variant_count)/float(variants_per_page)))
         
         print('total_pages: ', total_pages)
@@ -476,13 +476,14 @@ class _LOVD2GeneData(GeneData):
         result = []
         for entries in headers:
             # Column label text
-            h = entries.string
+            h = entries.text
 
             # For all entries with a string value, add them to the results (filters out extraneous th tags)
-            if h is not None:
+            if (h is not None) and ('\n' not in h):
                 # Normalize headers so all lower-case, no whitespace, no non-alphanumeric characters
                 h = GeneData._normalize_label(h)
-                result.append(h)
+                if h not in result:
+                    result.append(h)
 
         return result
 
@@ -609,14 +610,13 @@ class _LOVD3GeneData(GeneData):
             entries = []
             for columns in rows.find_all('td'):
                 # If there are any links in the cell, process them with get_link_info
-                 
                 if (columns.find('a') is not None) or ("ordered" in columns):
                     link_string = self._get_link_urls(columns.find_all('a'))
                     link_string = re.sub(r'\s', '', link_string)  # ensure there is no whitespace
                     entries.append(link_string)
                 elif ('c.' in columns.get_text() or 'p.' in columns.get_text()):
                     # Process HGVS notation
-                    transcript_id = self.transcript_refseqid() 
+                    transcript_id = self.transcript_refseqid()
                     hgvs_notation = utilities.remove_times_reported(columns.get_text())
                     hgvs_notation = utilities.correct_hgvs_parentheses(hgvs_notation)
                     hgvs_string = "".join([transcript_id, ':', hgvs_notation])
