@@ -11,10 +11,71 @@ def main():
     # step2("raw_data/BRCA_data_step1.csv", "raw_data/BRCA_data_step2.csv")
     # step3("raw_data/BRCA_data_step2.csv", "raw_data/BRCA_data_step3.csv")
     # step4("raw_data/BRCA_data_step3.csv", "raw_data/BRCA_data_step4.csv")
-    step5("raw_data/BRCA_data_step4.csv", "raw_data/BRCA_data_step5.csv")
+    # step5("raw_data/BRCA_data_step4.csv", "raw_data/BRCA_data_step5.csv")
+    # step6("raw_data/BRCA_data_step5.csv", "raw_data/BRCA_data_with_label")
+    step7("raw_data/BRCA_data_with_label", "raw_data/BRCA_data_with_label_1")
+    step8("raw_data/BRCA_data_with_label_1", "raw_data/BRCA_data_with_label_2")
+
+
+
+
+
+
+def step7(input, output):
+    """
+    remove fields in which more than 80% of the value is missing
+    """
+    df = pd.read_csv(input)
+    record_num = len(df)
+    for column in df.columns:
+        nan_num = record_num - df[column].count()
+        if nan_num/float(record_num) > 0.8:
+            df.drop(column, axis=1, inplace=True)
+    df.to_csv(output, index=None)
+
+
+def step8(input, output):
+    """parse submitter names to consistent ones"""
+    submitters = []
+    df = pd.read_csv(input)
+    for index, row in df.iterrows():
+        submitter = row["Submitter(ClinVar)"]
+        if "|" in submitter:
+            submitters.append("Multiple")
+        else:
+            if "ENIGMA" in submitter:
+                submitters.append("ENGIMA")
+            elif "BIC" in submitter:
+                submitters.append("BIC")
+            elif "SCRP" in submitter:
+                submitters.append("SCRP")
+            else:
+                submitters.append(submitter)
+    df["Submitters"] = submitters
+    df.drop("Submitter(ClinVar)", axis=1, inplace=True)
+    df.to_csv(output, index=False)
+
+
+
+
+
+def step6(input, output):
+    """
+    sepearte out the part of data that have labels
+    """
+    df = pd.read_csv(input)
+    with_label_rows = []
+    for index, row in df.iterrows():
+        if not pd.isnull(row["labels"]):
+            with_label_rows.append(row)
+    labeled_df = pd.DataFrame(with_label_rows)
+    labeled_df.to_csv(output, index=None)
+
+
 
 def step5(input, output):
-    """add label based on the field "Clinical_Significance(ClinVar)" """
+    """add label based on the field "Clinical_Significance(ClinVar)"
+    """
     df = pd.read_csv(input)
     labels = []
     for index, row in df.iterrows():
@@ -95,7 +156,8 @@ def step3(input, output):
                           "BIC_Designation(BIC)", "Reference_sequence(ENIGMA)",
                           "Clinical_significance_citations(ENIGMA)",
                           "Literature_source(exLOVD)", "Method(ClinVar)",
-                          "Amino_acids(VEP)", "Codons(VEP)",
+                          "Amino_acids(VEP)", "Codons(VEP)", "DISTANCE(VEP)",
+                          "Literature_citation(BIC)"
                           ]
 
     redudant_fields = ["SAS_Allele_frequency(1000_Genomes)",
@@ -112,9 +174,7 @@ def step3(input, output):
                        "Allele_Origin(ClinVar)", "Assertion_method(ENIGMA)",
                        "Assertion_method_citation(ENIGMA)", "BIOTYPE(VEP)",
                        "Collection_method(ENIGMA)", "REFSEQ_MATCH(VEP)"]
-
     df=pd.read_csv(input)
-
     for each_column in meaningless_fields + redudant_fields + constant_fields:
         df.drop(each_column, axis=1, inplace=True)
 
