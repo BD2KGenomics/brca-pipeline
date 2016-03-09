@@ -49,7 +49,12 @@ def step14(input, output):
     df["Gene"] = Gene
     df["SNP_or_Indel"] = SNP_or_Indel
     df.rename(columns={'Genomic_Coordinate(ENIGMA)': 'id'}, inplace=True)
-    df.rename(columns={'labels': 'label'}, inplace=True)
+    df.rename(columns={'labels': 'label', "IMPACT(VEP)": "impact"}, inplace=True)
+    df.drop("id", axis=1, inplace=True)
+    label = df['label']
+    df.drop(labels=['label'], axis=1,inplace = True)
+    df.insert(0, 'Label', label)
+
 
     df.to_csv(output, index=False)
 
