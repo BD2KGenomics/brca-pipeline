@@ -1,15 +1,74 @@
 import pandas as pd
 import ast
 import pandas_profiling
-
+import numpy as np
+from matplotlib import pyplot as plt
 
 
 
 def main():
-    step1("raw_data/merged_withVEP_cleaned.csv", "raw_data/BRCA_data_step1.csv")
-    step2("raw_data/BRCA_data_step1.csv", "raw_data/BRCA_data_step2.csv")
-    step3("raw_data/BRCA_data_step2.csv", "raw_data/BRCA_data_step3.csv")
-    step4("raw_data/BRCA_data_step3.csv", "raw_data/BRCA_data_step4.csv")
+    # step1("raw_data/merged_withVEP_cleaned.csv", "raw_data/BRCA_data_step1.csv")
+    # step2("raw_data/BRCA_data_step1.csv", "raw_data/BRCA_data_step2.csv")
+    # step3("raw_data/BRCA_data_step2.csv", "raw_data/BRCA_data_step3.csv")
+    # step4("raw_data/BRCA_data_step3.csv", "raw_data/BRCA_data_step4.csv")
+    step5("raw_data/BRCA_data_step4.csv", "raw_data/BRCA_data_step5.csv")
+
+def step5(input, output):
+    """add label based on the field "Clinical_Significance(ClinVar)" """
+    df = pd.read_csv(input)
+    labels = []
+    for index, row in df.iterrows():
+        clin_sig = row['Clinical_Significance(ClinVar)']
+        if pd.isnull(clin_sig):
+            labels.append("")
+        else:
+            clin_sig = clin_sig.lower()
+            if "unknown" in clin_sig or "uncertain" in clin_sig:
+                labels.append("")
+            else:
+                if "benign" in clin_sig and "patho" in clin_sig:
+                    labels.append("")
+                elif "benign" in clin_sig and "patho" not in clin_sig:
+                    labels.append("benign")
+                elif "benign" not in clin_sig and "patho" in clin_sig:
+                    labels.append("pathogenic")
+                else:
+                    labels.append("")
+    df['labels'] = labels
+    df.drop("Clinical_Significance(ClinVar)", axis=1, inplace=True)
+    df.to_csv(output, index=None)
+
+
+
+def step4(input, output):
+    """merge allele frequency from 1000 genome and exac
+    replace "-", "?" with nan in various fields
+    """
+    df=pd.read_csv(input)
+    afs = []
+    for index, row in df.iterrows():
+        onekg = row["Allele_frequency(1000_Genomes)"]
+        exac = row["Allele_frequency(ExAC)"]
+        af = 0
+        if pd.isnull(onekg) and not pd.isnull(exac):
+            af = exac
+        if not pd.isnull(onekg) and pd.isnull(exac):
+            af = onekg
+        if not pd.isnull(onekg) and not pd.isnull(exac):
+            af = (onekg + exac)/2
+        if af == 0:
+            af = ""
+        afs.append(af)
+        for column in row.keys():
+            if (row[column] == "-" or row[column] == "?" or
+                    (type(row[column]) == str and row[column].lower() == "unknown")):
+                df.set_value(index, column, "")
+
+    df["Allele_frequency(1000g_exac)"] = afs
+    df.drop("Allele_frequency(1000_Genomes)", axis=1, inplace=True)
+    df.drop("Allele_frequency(ExAC)", axis=1, inplace=True)
+    df.to_csv(output, index=None)
+
 
 def step2(input, output):
     """extract cases like [0.0]"""
@@ -35,7 +94,8 @@ def step3(input, output):
                           "HGVS_cDNA(ENIGMA)", "Source", "Allele_origin(ENIGMA)",
                           "BIC_Designation(BIC)", "Reference_sequence(ENIGMA)",
                           "Clinical_significance_citations(ENIGMA)",
-                          "Literature_source(exLOVD)", "Method(ClinVar)"
+                          "Literature_source(exLOVD)", "Method(ClinVar)",
+                          "Amino_acids(VEP)", "Codons(VEP)",
                           ]
 
     redudant_fields = ["SAS_Allele_frequency(1000_Genomes)",
