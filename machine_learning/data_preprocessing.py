@@ -12,13 +12,147 @@ def main():
     # step3("raw_data/BRCA_data_step2.csv", "raw_data/BRCA_data_step3.csv")
     # step4("raw_data/BRCA_data_step3.csv", "raw_data/BRCA_data_step4.csv")
     # step5("raw_data/BRCA_data_step4.csv", "raw_data/BRCA_data_step5.csv")
+
+    ## from this step onward, it's only analyzing labeled variant
     # step6("raw_data/BRCA_data_step5.csv", "raw_data/BRCA_data_with_label")
-    step7("raw_data/BRCA_data_with_label", "raw_data/BRCA_data_with_label_1")
-    step8("raw_data/BRCA_data_with_label_1", "raw_data/BRCA_data_with_label_2")
+    # step7("raw_data/BRCA_data_with_label", "raw_data/BRCA_data_with_label_1")
+    # step8("raw_data/BRCA_data_with_label_1", "raw_data/BRCA_data_with_label_2")
+    # step9("raw_data/BRCA_data_with_label_2", "raw_data/BRCA_data_with_label_3")
+    # step10("raw_data/BRCA_data_with_label_3", "raw_data/BRCA_data_with_label_4")
+    # step11("raw_data/BRCA_data_with_label_4", "raw_data/BRCA_data_with_label_5")
+    # step12("raw_data/BRCA_data_with_label_5", "raw_data/BRCA_data_with_label_6")
+    # step13("raw_data/BRCA_data_with_label_6", "raw_data/BRCA_data_with_label_7")
+    step14("raw_data/BRCA_data_with_label_7", "raw_data/BRCA_data_with_label_final")
 
 
+def step14(input, output):
+    """text mine "genomic coordinate (ENIGMA)"
+    """
+    Gene = []
+    SNP_or_Indel = []
+    df = pd.read_csv(input)
+    for index, row in df.iterrows():
+        genome_coor = row["Genomic_Coordinate(ENIGMA)"].replace("-", "")
+        items = genome_coor.split(":")
+        if items[0] == "chr13":
+            Gene.append("BRCA2")
+        elif items[0] == "chr17":
+            Gene.append("BRCA1")
+        else:
+            print "bad time"
+        ref, alt = items[-1].split(">")
+        if len(ref) == len(alt):
+            SNP_or_Indel.append("SNP")
+        else:
+            SNP_or_Indel.append("indel")
+
+    df["Gene"] = Gene
+    df["SNP_or_Indel"] = SNP_or_Indel
+    df.rename(columns={'Genomic_Coordinate(ENIGMA)': 'id'}, inplace=True)
+    df.rename(columns={'labels': 'label'}, inplace=True)
+
+    df.to_csv(output, index=False)
 
 
+def step13(input, output):
+    """replace STRAND(VEP) -1 and 1 with "-" and "+" """
+    Strands = []
+    df = pd.read_csv(input)
+    for index, row in df.iterrows():
+        strand = row["STRAND(VEP)"]
+        if strand == -1:
+            Strands.append("-")
+        else:
+            Strands.append("+")
+    df["Strand"] = Strands
+    df.drop("STRAND(VEP)", axis=1, inplace=True)
+    df.to_csv(output, index=False)
+
+
+def step12(input, output):
+    """parse PHENO(VEP) field"""
+    Phenotypes = []
+    df = pd.read_csv(input)
+    for index, row in df.iterrows():
+        pheno = row["PHENO(VEP)"]
+        if pd.isnull(pheno):
+            Phenotypes.append("Unknown")
+        elif "1" in pheno and "0" not in pheno:
+            Phenotypes.append("1")
+        elif "0" in pheno and "1" not in pheno:
+            Phenotypes.append("0")
+        else:
+            Phenotypes.append("Unknown")
+    df["Phenotypes"] = Phenotypes
+    df.drop("PHENO(VEP)", axis=1, inplace=True)
+    df.to_csv(output, index=False)
+
+
+def step11(input, output):
+    """text mind EXON(VEP) and INTRON(VEP) columns
+    """
+    exon_or_intron = []
+    df = pd.read_csv(input)
+    for index, row in df.iterrows():
+        exon = row["EXON(VEP)"]
+        intron = row["INTRON(VEP)"]
+        if pd.isnull(exon) and pd.isnull(intron):
+            exon_or_intron.append("Unknown")
+        elif pd.isnull(exon) and not pd.isnull(intron):
+            exon_or_intron.append("intron")
+        elif not pd.isnull(exon) and pd.isnull(intron):
+            exon_or_intron.append("exon")
+        else:
+            exon_or_intron.append("Unknown")
+    df["EXON_or_INTRON"] = exon_or_intron
+    df.drop("EXON(VEP)", axis=1, inplace=True)
+    df.drop("INTRON(VEP)", axis=1, inplace=True)
+    df.to_csv(output, index=False)
+
+
+def step10(input, output):
+    """data cleaning of column "Consequence(VEP)" """
+    Consequences = []
+    df = pd.read_csv(input)
+    for index, row in df.iterrows():
+        cons = row["Consequence(VEP)"].lower()
+        if "&" in cons:
+            Consequences.append("harmful")
+        elif ("intron" in cons or "synonymous" in cons or "utr" in cons
+              or "upstream" in cons or "deletion" in cons or
+              "coding_sequence" in cons):
+            Consequences.append("harmless")
+        elif ("stop" in cons or "start" in cons or "missense" in cons or
+              "frameshift" in cons or "splice" in cons or
+              "protein_altering" in cons or "regulatory" in cons or
+              "downstream" in cons):
+            Consequences.append("harmful")
+        else:
+            Consequences.append(cons)
+    df["Consequences"] = Consequences
+    df.drop("Consequence(VEP)", axis=1, inplace=True)
+    df.to_csv(output, index=False)
+
+
+def step9(input, output):
+    """text mine Comment_on_clinical_significance(ENIGMA
+    """
+    comments = []
+    df = pd.read_csv(input)
+    for index, row in df.iterrows():
+        comment = row["Comment_on_clinical_significance(ENIGMA)"]
+        if pd.isnull(comment):
+           comments.append("None")
+        else:
+            if "Class" in comment:
+                p = comment.find("Class ")
+                comments.append(comment[p: p+7])
+            else:
+                comments.append("None")
+
+    df["Comments"] = comments
+    df.drop("Comment_on_clinical_significance(ENIGMA)", axis=1, inplace=True)
+    df.to_csv(output, index=False)
 
 
 def step7(input, output):
@@ -56,9 +190,6 @@ def step8(input, output):
     df.to_csv(output, index=False)
 
 
-
-
-
 def step6(input, output):
     """
     sepearte out the part of data that have labels
@@ -70,7 +201,6 @@ def step6(input, output):
             with_label_rows.append(row)
     labeled_df = pd.DataFrame(with_label_rows)
     labeled_df.to_csv(output, index=None)
-
 
 
 def step5(input, output):
@@ -98,7 +228,6 @@ def step5(input, output):
     df['labels'] = labels
     df.drop("Clinical_Significance(ClinVar)", axis=1, inplace=True)
     df.to_csv(output, index=None)
-
 
 
 def step4(input, output):
@@ -157,16 +286,8 @@ def step3(input, output):
                           "Clinical_significance_citations(ENIGMA)",
                           "Literature_source(exLOVD)", "Method(ClinVar)",
                           "Amino_acids(VEP)", "Codons(VEP)", "DISTANCE(VEP)",
-                          "Literature_citation(BIC)"
+                          "Literature_citation(BIC)", "Gene_symbol(ENIGMA)"
                           ]
-
-    redudant_fields = ["SAS_Allele_frequency(1000_Genomes)",
-                       "AMR_Allele_frequency(1000_Genomes)",
-                       "AFR_Allele_frequency(1000_Genomes)",
-                       "EAS_Allele_frequency(1000_Genomes)",
-                       "EUR_Allele_frequency(1000_Genomes)",
-                       "Gene_symbol(ENIGMA)"
-                       ]
 
     constant_fields = ["HIGH_INF_POS(VEP)", "MOTIF_NAME(VEP)",
                        "MOTIF_SCORE_CHANGE(VEP)", "MOTIF_POS(VEP)",
@@ -175,7 +296,7 @@ def step3(input, output):
                        "Assertion_method_citation(ENIGMA)", "BIOTYPE(VEP)",
                        "Collection_method(ENIGMA)", "REFSEQ_MATCH(VEP)"]
     df=pd.read_csv(input)
-    for each_column in meaningless_fields + redudant_fields + constant_fields:
+    for each_column in meaningless_fields + constant_fields:
         df.drop(each_column, axis=1, inplace=True)
 
     df.to_csv(output, index=None)
