@@ -1,11 +1,18 @@
 import pandas as pd
-
-
-
+import ast
 
 def main():
     #step1()
-    step2()
+    #step2()
+    step3()
+
+def step3():
+
+
+    z = ast.literal_eval("[0.1,0.2]")
+    print type(z)
+
+
 
 
 def step2():
