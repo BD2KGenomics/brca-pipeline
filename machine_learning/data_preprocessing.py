@@ -11,13 +11,16 @@ def main():
 def step2():
     """remove unwanted columns/features"""
     to_remove = ["BIC_Nomenclature(ENIGMA)", "Abbrev_AA_change(ENIGMA)", "URL(ENIGMA)",
-                 "Condition_ID_type(ENIGMA)", "Condition_ID_value(ENIGMA)", "Condition_category(ENIGMA)"
-
-                 ]
+                 "Condition_ID_type(ENIGMA)", "Condition_ID_value(ENIGMA)", "Condition_category(ENIGMA)",
+                 "Date_last_evaluated(ENIGMA)", "ClinVarAccession(ENIGMA)", "Date_Last_Updated(ClinVar)",
+                 "SCV(ClinVar)", "BIC_identifier(exLOVD)", "Allele(VEP)", "SYMBOL(VEP)", "Gene(VEP)",
+                 "Feature_type(VEP)", "Feature(VEP)", "HGVSc(VEP)", "HGVSp(VEP)", "cDNA_position(VEP)",
+                 "CDS_position(VEP)", "Protein_position(VEP)", "SYMBOL_SOURCE(VEP)", "HGNC_ID(VEP)"]
     df=pd.read_csv("data/BRCA_data_preprocessed.csv")
-    for index, row in df.iterrows():
-        print row["SYMBOL(VEP)"]
+    for each_column in to_remove:
+        df.drop(each_column, axis=1, inplace=True)
 
+    df.to_csv("data/BRCA_data_preprocessed1.csv")
 
 
 def step1():
