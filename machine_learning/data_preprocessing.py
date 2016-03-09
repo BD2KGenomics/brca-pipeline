@@ -1,64 +1,80 @@
 import pandas as pd
 import ast
+import pandas_profiling
+
+
+
 
 def main():
-    #step1()
-    #step2()
-    step3()
+    step1("raw_data/merged_withVEP_cleaned.csv", "raw_data/BRCA_data_step1.csv")
+    step2("raw_data/BRCA_data_step1.csv", "raw_data/BRCA_data_step2.csv")
+    step3("raw_data/BRCA_data_step2.csv", "raw_data/BRCA_data_step3.csv")
+    step4("raw_data/BRCA_data_step3.csv", "raw_data/BRCA_data_step4.csv")
 
-def step3():
+def step2(input, output):
+    """extract cases like [0.0]"""
+    df=pd.read_csv(input)
+    for index, row in df.iterrows():
+        for key, value in row.iteritems():
+            if type(value) == str and value[0] == "[" and value[-1] == "]":
+                df.set_value(index, key, ast.literal_eval(value)[0])
+    df.to_csv(output, index=None)
 
 
-    z = ast.literal_eval("[0.1,0.2]")
-    print type(z)
-
-
-
-
-def step2():
+def step3(input, output):
     """remove unwanted columns/features"""
-    to_remove = ["BIC_Nomenclature(ENIGMA)", "Abbrev_AA_change(ENIGMA)", "URL(ENIGMA)",
-                 "Condition_ID_type(ENIGMA)", "Condition_ID_value(ENIGMA)", "Condition_category(ENIGMA)",
-                 "Date_last_evaluated(ENIGMA)", "ClinVarAccession(ENIGMA)", "Date_Last_Updated(ClinVar)",
-                 "SCV(ClinVar)", "BIC_identifier(exLOVD)", "Allele(VEP)", "SYMBOL(VEP)", "Gene(VEP)",
-                 "Feature_type(VEP)", "Feature(VEP)", "HGVSc(VEP)", "HGVSp(VEP)", "cDNA_position(VEP)",
-                 "CDS_position(VEP)", "Protein_position(VEP)", "SYMBOL_SOURCE(VEP)", "HGNC_ID(VEP)"]
-    df=pd.read_csv("data/BRCA_data_preprocessed.csv")
-    for each_column in to_remove:
+    meaningless_fields = ["BIC_Nomenclature(ENIGMA)", "Abbrev_AA_change(ENIGMA)",
+                          "URL(ENIGMA)", "Condition_ID_type(ENIGMA)",
+                          "Condition_ID_value(ENIGMA)", 'Condition_category(ENIGMA)',
+                          "Date_last_evaluated(ENIGMA)", 'ClinVarAccession(ENIGMA)',
+                          'HGVS_protein(ENIGMA)', 'Date_Last_Updated(ClinVar)',
+                          "PUBMED(VEP)", 'HGVS(ClinVar)','SCV(ClinVar)',
+                          'BIC_identifier(exLOVD)', "Clinical_classification(BIC)",
+                          "Clinical_importance(BIC)", "Clinical_significance(ENIGMA)",
+                          "Existing_variation(VEP)", "Germline_or_Somatic(BIC)",
+                          "HGVS_cDNA(ENIGMA)", "Source", "Allele_origin(ENIGMA)",
+                          "BIC_Designation(BIC)", "Reference_sequence(ENIGMA)",
+                          "Clinical_significance_citations(ENIGMA)",
+                          "Literature_source(exLOVD)", "Method(ClinVar)"
+                          ]
+
+    redudant_fields = ["SAS_Allele_frequency(1000_Genomes)",
+                       "AMR_Allele_frequency(1000_Genomes)",
+                       "AFR_Allele_frequency(1000_Genomes)",
+                       "EAS_Allele_frequency(1000_Genomes)",
+                       "EUR_Allele_frequency(1000_Genomes)",
+                       "Gene_symbol(ENIGMA)"
+                       ]
+
+    constant_fields = ["HIGH_INF_POS(VEP)", "MOTIF_NAME(VEP)",
+                       "MOTIF_SCORE_CHANGE(VEP)", "MOTIF_POS(VEP)",
+                       "APPRIS(VEP)",
+                       "Allele_Origin(ClinVar)", "Assertion_method(ENIGMA)",
+                       "Assertion_method_citation(ENIGMA)", "BIOTYPE(VEP)",
+                       "Collection_method(ENIGMA)", "REFSEQ_MATCH(VEP)"]
+
+    df=pd.read_csv(input)
+
+    for each_column in meaningless_fields + redudant_fields + constant_fields:
         df.drop(each_column, axis=1, inplace=True)
 
-    df.to_csv("data/BRCA_data_preprocessed1.csv")
+    df.to_csv(output, index=None)
 
 
-def step1():
+def step1(input, output):
     """
-    1. rename VEP columns from style as "VEP_column_name" to column_name(VEP), so it's consistent across all columns
-    2. replace a cell of value "-" with empty string
+    replace a cell of value "-" with empty string
     """
-    f = open("data/merged_withVEP.csv", "r")
-    f_out = open("data/BRCA_data_preprocessed.csv", "w")
-    line_num = 0
+    f = open(input, "r")
+    f_out = open(output, "w")
     for line in f:
-        line_num +=1
-        # fix VEP column name
-        if line_num == 1:
-            columns = line.strip().split(",")
-            new_columns = []
-            for column in columns:
-                if "VEP" in column:
-                    column = column[4:] + "(VEP)"
-                new_columns.append(column)
-            new_line = ",".join(new_columns) + "\n"
-            print new_line
-        else:
-            # replace "-" with empty string
-            cells = line.strip().split(",")
-            new_cells = []
-            for cell in cells:
-                if cell == "-":
-                    cell = ""
-                new_cells.append(cell)
-            new_line = ",".join(new_cells) + "\n"
+        cells = line.strip().split(",")
+        new_cells = []
+        for cell in cells:
+            if cell == "-" or cell.upper()=="UNKNOWN":
+                cell = ""
+            new_cells.append(cell)
+        new_line = ",".join(new_cells) + "\n"
         f_out.write(new_line)
 
 
