@@ -9,7 +9,8 @@ classifiers = {"Decision tree": tree.DecisionTreeClassifier(),
                "Random Forest": ensemble.RandomForestClassifier(),
                "K nearest neigbour": neighbors.KNeighborsClassifier(),
                "Logistic regression": linear_model.LogisticRegression(),
-               "Support vector machine": svm.SVC(),
+               "Support vector machine: linear kernel": svm.SVC(kernel="linear"),
+               "Support vector machine: rbf kernel": svm.SVC(kernel="rbf"),
                "Ada Boost": ensemble.AdaBoostClassifier(),
                # "majority voting": ensemble.VotingClassifier()
                }
