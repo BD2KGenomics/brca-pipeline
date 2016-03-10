@@ -7,12 +7,11 @@ import pydot
 
 classifiers = {"Decision tree": tree.DecisionTreeClassifier(),
                "Random Forest": ensemble.RandomForestClassifier(),
-               "K nearest neigbour": neighbors.KNeighborsClassifier(),
+               "K nearest neighbour": neighbors.KNeighborsClassifier(),
                "Logistic regression": linear_model.LogisticRegression(),
-               "Support vector machine: linear kernel": svm.SVC(kernel="linear"),
                "Support vector machine: rbf kernel": svm.SVC(kernel="rbf"),
                "Ada Boost": ensemble.AdaBoostClassifier(),
-               # "majority voting": ensemble.VotingClassifier()
+               "Perceptron": linear_model.Perceptron()
                }
 
 
@@ -35,8 +34,19 @@ def main():
         data, label, test_size=0.1, random_state=0)
 
     result = tenfold_cross_validation(x_train, y_train)
-    print result
     print result.mean()
+
+def feature_selection(x_train, y_train):
+    """drop one feature each time to see which one has the
+    greatest influence in the accuracy score"""
+    for column in x_train.columns:
+        x_train_drop = x_train.drop(column, axis=1)
+        result = tenfold_cross_validation(x_train_drop, y_train)
+        print "\ndrop out:" + column
+        print result.mean()
+        print "mean:", result.mean().mean()
+
+
 
 
 def tenfold_cross_validation(x_train, y_train):
@@ -52,8 +62,17 @@ def tenfold_cross_validation(x_train, y_train):
             prediction = clf.predict(val_data)
             accuracy = metrics.accuracy_score(prediction, val_targets)
             result_df.loc[foldnum, classfier_name] = accuracy
+        result_df.loc[foldnum, "Voting of other classifiers"] = majority_vote(
+            tr_data, tr_targets, val_data, val_targets)
     return result_df
 
+def majority_vote(tr_data, tr_targets, val_data, val_targets):
+    estimators = [(i, classifiers[i]) for i in classifiers.keys()]
+    voting = ensemble.VotingClassifier(estimators=estimators)
+    voting.fit(tr_data, tr_targets)
+    prediction = voting.predict(val_data)
+    accuracy = metrics.accuracy_score(prediction, val_targets)
+    return accuracy
 
 
 def visualize_tree(dtree):
