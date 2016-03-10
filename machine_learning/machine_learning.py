@@ -4,17 +4,16 @@ from sklearn import tree, metrics, neighbors, linear_model, svm, ensemble
 from IPython.display import Image, display
 from sklearn.externals.six import StringIO
 import pydot
+from matplotlib import pyplot as plt
 
 classifiers = {"Decision tree": tree.DecisionTreeClassifier(),
                "Random Forest": ensemble.RandomForestClassifier(),
-               "K nearest neighbour": neighbors.KNeighborsClassifier(),
+               "KNN": neighbors.KNeighborsClassifier(),
                "Logistic regression": linear_model.LogisticRegression(),
-               "Support vector machine: rbf kernel": svm.SVC(kernel="rbf"),
+               "SVM": svm.SVC(kernel="rbf"),
                "Ada Boost": ensemble.AdaBoostClassifier(),
-               "Perceptron": linear_model.Perceptron()
+               "Perceptron": linear_model.Perceptron(n_iter=100)
                }
-
-
 
 
 def folds_to_split(data,targets,train,test):
@@ -35,6 +34,13 @@ def main():
 
     result = tenfold_cross_validation(x_train, y_train)
     print result.mean()
+    plt.figure()
+    result.mean().plot(kind="bar", sort_columns=True)
+    plt.ylim([0.88, 0.98])
+    plt.ylabel("accuracy score")
+    plt.xticks(rotation=45)
+    plt.show()
+
 
 def feature_selection(x_train, y_train):
     """drop one feature each time to see which one has the
@@ -45,8 +51,6 @@ def feature_selection(x_train, y_train):
         print "\ndrop out:" + column
         print result.mean()
         print "mean:", result.mean().mean()
-
-
 
 
 def tenfold_cross_validation(x_train, y_train):
@@ -62,12 +66,13 @@ def tenfold_cross_validation(x_train, y_train):
             prediction = clf.predict(val_data)
             accuracy = metrics.accuracy_score(prediction, val_targets)
             result_df.loc[foldnum, classfier_name] = accuracy
-        result_df.loc[foldnum, "Voting of other classifiers"] = majority_vote(
+        result_df.loc[foldnum, "Voting"] = majority_vote(
             tr_data, tr_targets, val_data, val_targets)
     return result_df
 
 def majority_vote(tr_data, tr_targets, val_data, val_targets):
-    estimators = [(i, classifiers[i]) for i in classifiers.keys()]
+    good_classifiers = ["Decision tree", "Random Forest", "KNN", "SVM", "Ada Boost"]
+    estimators = [(i, classifiers[i]) for i in good_classifiers]
     voting = ensemble.VotingClassifier(estimators=estimators)
     voting.fit(tr_data, tr_targets)
     prediction = voting.predict(val_data)
