@@ -14,14 +14,14 @@ def main():
     # step5("raw_data/BRCA_data_step4.csv", "raw_data/BRCA_data_step5.csv")
 
     ## from this step onward, it's only analyzing labeled variant
-    # step6("raw_data/BRCA_data_step5.csv", "raw_data/BRCA_data_with_label")
-    # step7("raw_data/BRCA_data_with_label", "raw_data/BRCA_data_with_label_1")
-    # step8("raw_data/BRCA_data_with_label_1", "raw_data/BRCA_data_with_label_2")
-    # step9("raw_data/BRCA_data_with_label_2", "raw_data/BRCA_data_with_label_3")
-    # step10("raw_data/BRCA_data_with_label_3", "raw_data/BRCA_data_with_label_4")
-    # step11("raw_data/BRCA_data_with_label_4", "raw_data/BRCA_data_with_label_5")
-    # step12("raw_data/BRCA_data_with_label_5", "raw_data/BRCA_data_with_label_6")
-    # step13("raw_data/BRCA_data_with_label_6", "raw_data/BRCA_data_with_label_7")
+    step6("raw_data/BRCA_data_step5.csv", "raw_data/BRCA_data_with_label")
+    step7("raw_data/BRCA_data_with_label", "raw_data/BRCA_data_with_label_1")
+    step8("raw_data/BRCA_data_with_label_1", "raw_data/BRCA_data_with_label_2")
+    step9("raw_data/BRCA_data_with_label_2", "raw_data/BRCA_data_with_label_3")
+    #step10("raw_data/BRCA_data_with_label_3", "raw_data/BRCA_data_with_label_4")
+    step11("raw_data/BRCA_data_with_label_3", "raw_data/BRCA_data_with_label_5")
+    step12("raw_data/BRCA_data_with_label_5", "raw_data/BRCA_data_with_label_6")
+    step13("raw_data/BRCA_data_with_label_6", "raw_data/BRCA_data_with_label_7")
     step14("raw_data/BRCA_data_with_label_7", "raw_data/BRCA_data_with_label_final")
 
 
