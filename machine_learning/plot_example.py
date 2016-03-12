@@ -24,7 +24,7 @@ def bar_plot(df):
 
     plt.ylim([0.88, 1])
     plt.ylabel('Accuracy Score')
-    plt.ylabel("max depth")
+    plt.xlabel("")
     # plt.title('')
 
     labels=[text.split("=")[-1] for text in df.columns]
@@ -34,10 +34,9 @@ def bar_plot(df):
 
     mpl.rcParams['xtick.labelsize'] = 15
     plt.tight_layout()
-
-
-
     plt.show()
+
+
 
 if __name__ == "__main__":
     bar_plot(df=pd.DataFrame())

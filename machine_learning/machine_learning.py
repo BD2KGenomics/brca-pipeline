@@ -11,7 +11,7 @@ import plot_example
 import helper
 
 ALL_ALGOS = {"Decision tree": tree.DecisionTreeClassifier(max_depth=7, min_samples_leaf=10),
-             "Random Forest": ensemble.RandomForestClassifier(),
+             "Random Forest": ensemble.RandomForestClassifier(max_depth=6, n_estimators=50),
              "KNN": neighbors.KNeighborsClassifier(),
              "Logistic regression": linear_model.LogisticRegression(),
              "SVM": svm.SVC(kernel="rbf"),
@@ -39,14 +39,17 @@ def Random_forest_variation(x_train, y_train):
         [tr_data, val_data, tr_targets, val_targets] = helper.folds_to_split(x_train, y_train, train, val)
         tr_targets = tr_targets.as_matrix().ravel()
         val_targets = val_targets.as_matrix().ravel()
-
-        for max_depth in range(2, 20):
-            clf = ensemble.RandomForestClassifier(max_depth=max_depth)
-            clf.fit(tr_data, tr_targets)
-            prediction = clf.predict(val_data)
-            accuracy = metrics.accuracy_score(prediction, val_targets)
-            result_df.loc[foldnum, "max_depth={0}".format(max_depth)] = accuracy
-
+        clf = ensemble.RandomForestClassifier(max_depth=6,
+                                              n_estimators=50)
+        clf.fit(tr_data, tr_targets)
+        prediction = clf.predict(val_data)
+        accuracy = metrics.accuracy_score(prediction, val_targets)
+        result_df.loc[foldnum, "best"] = accuracy
+        clf = ensemble.RandomForestClassifier()
+        clf.fit(tr_data, tr_targets)
+        prediction = clf.predict(val_data)
+        accuracy = metrics.accuracy_score(prediction, val_targets)
+        result_df.loc[foldnum, "default"] = accuracy
     return result_df
 
 
