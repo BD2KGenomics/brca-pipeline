@@ -24,9 +24,10 @@ def bar_plot(df):
 
     plt.ylim([0.88, 1])
     plt.ylabel('Accuracy Score')
-    plt.title('sklearn default setting accurary Score')
+    plt.ylabel("max depth")
+    # plt.title('')
 
-    labels=[textwrap.fill(text,12) for text in df.columns]
+    labels=[text.split("=")[-1] for text in df.columns]
     plt.xticks(index + bar_width/2, labels)
     for x, y in zip(index, means):
         plt.text(x, y + 0.002, str(y)[0:5])

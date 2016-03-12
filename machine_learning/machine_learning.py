@@ -10,13 +10,13 @@ from matplotlib import pyplot as plt
 import plot_example
 import helper
 
-ALL_ALGOS = {"Decision tree": tree.DecisionTreeClassifier(),
-               "Random Forest": ensemble.RandomForestClassifier(),
-               "KNN": neighbors.KNeighborsClassifier(),
-               "Logistic regression": linear_model.LogisticRegression(),
-               "SVM": svm.SVC(kernel="rbf"),
-               "Ada Boost": ensemble.AdaBoostClassifier(),
-               "Perceptron": linear_model.Perceptron(n_iter=100)}
+ALL_ALGOS = {"Decision tree": tree.DecisionTreeClassifier(max_depth=7, min_samples_leaf=10),
+             "Random Forest": ensemble.RandomForestClassifier(),
+             "KNN": neighbors.KNeighborsClassifier(),
+             "Logistic regression": linear_model.LogisticRegression(),
+             "SVM": svm.SVC(kernel="rbf"),
+             "Ada Boost": ensemble.AdaBoostClassifier(),
+             "Perceptron": linear_model.Perceptron(n_iter=100)}
 
 
 def main():
@@ -27,9 +27,30 @@ def main():
     x_train, x_test, y_train, y_test = cross_validation.train_test_split(
         data, label, test_size=0.1, random_state=0)
 
-    result = dtree_variations(x_train, y_train)
+    result = Random_forest_variation(x_train, y_train)
     print result.mean()
     plot_example.bar_plot(result)
+
+def Random_forest_variation(x_train, y_train):
+    result_df = pd.DataFrame()
+    foldnum = 0
+    for train, val in cross_validation.KFold(len(x_train), shuffle=True, n_folds=10, random_state=0):
+        foldnum += 1
+        [tr_data, val_data, tr_targets, val_targets] = helper.folds_to_split(x_train, y_train, train, val)
+        tr_targets = tr_targets.as_matrix().ravel()
+        val_targets = val_targets.as_matrix().ravel()
+
+        for max_depth in range(2, 20):
+            clf = ensemble.RandomForestClassifier(max_depth=max_depth)
+            clf.fit(tr_data, tr_targets)
+            prediction = clf.predict(val_data)
+            accuracy = metrics.accuracy_score(prediction, val_targets)
+            result_df.loc[foldnum, "max_depth={0}".format(max_depth)] = accuracy
+
+    return result_df
+
+
+
 
 def dtree_variations(x_train, y_train):
     result_df = pd.DataFrame()
@@ -40,19 +61,21 @@ def dtree_variations(x_train, y_train):
         tr_targets = tr_targets.as_matrix().ravel()
         val_targets = val_targets.as_matrix().ravel()
 
-        for criterion in ["gini", "entropy"]:
-            for splitter in ["best", "random"]:
-                for max_depth in range(2, 10):
-                    for min_sample_leaf in [1, 5, 10, 20, 100]:
-                        clf = tree.DecisionTreeClassifier(criterion=criterion,
-                                                          splitter=splitter,
-                                                          max_depth=max_depth,
-                                                          min_samples_leaf=min_sample_leaf)
-                        clf.fit(tr_data, tr_targets)
-                        prediction = clf.predict(val_data)
-                        accuracy = metrics.accuracy_score(prediction, val_targets)
-                        result_df.loc[foldnum, "criterion={0}, splitter={1}, max_depth={2}, min_sample_leaf={3}".format(
-                            criterion, splitter, max_depth, min_sample_leaf)] = accuracy
+        clf_best = tree.DecisionTreeClassifier(
+                                          max_depth=7,
+                                          min_samples_leaf=10
+                                          )
+        clf_best.fit(tr_data, tr_targets)
+        clf_default = tree.DecisionTreeClassifier()
+        clf_default.fit(tr_data, tr_targets)
+
+        prediction_default = clf_default.predict(val_data)
+        prediction_best = clf_best.predict(val_data)
+        accuracy_default = metrics.accuracy_score(prediction_default, val_targets)
+        accuracy_best = metrics.accuracy_score(prediction_best, val_targets)
+        result_df.loc[foldnum, "default setting"] = accuracy_default
+        result_df.loc[foldnum, "best setting"] = accuracy_best
+
     return result_df
 
 
