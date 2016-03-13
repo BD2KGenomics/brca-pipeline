@@ -6,7 +6,7 @@ import textwrap
 
 def bar_plot(df):
     n_groups = len(df.columns)
-    means = [i for i in df.mean()]
+    means = [i for i in df.mean().sort(inplace=False)]
     std = [i for i in df.describe().loc["std"]]
     index = np.arange(n_groups)
     bar_width = 0.9

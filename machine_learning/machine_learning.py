@@ -14,7 +14,8 @@ ALL_ALGOS = {"Decision tree": tree.DecisionTreeClassifier(max_depth=7, min_sampl
              "Random Forest": ensemble.RandomForestClassifier(max_depth=6, n_estimators=50),
              "KNN": neighbors.KNeighborsClassifier(n_neighbors=4, weights="distance"),
              "Logistic regression": linear_model.LogisticRegression(),
-             "SVM": svm.SVC(kernel="rbf"),
+             "SVM Linear": svm.SVC(kernel="linear"),
+             "SVM RBF": svm.SVC(kernel="rbf"),
              "Ada Boost": ensemble.AdaBoostClassifier(),
              "Perceptron": linear_model.Perceptron(n_iter=100)}
 
@@ -26,10 +27,32 @@ def main():
 
     x_train, x_test, y_train, y_test = cross_validation.train_test_split(
         data, label, test_size=0.1, random_state=0)
-    result_uniform, result_distance = knn_variation(x_train, y_train)
-    print result_uniform.mean()
-    print result_distance.mean()
-    plot_example.two_series_bar_plot(result_uniform, result_distance)
+    result = tenfold_cross_validation(x_train, y_train, ALL_ALGOS)
+    print result.mean()
+    plot_example.bar_plot(result)
+
+def svm_variation(x_train, y_train):
+    result_df = pd.DataFrame()
+    foldnum = 0
+    for train, val in cross_validation.KFold(len(x_train), shuffle=True, n_folds=10, random_state=0):
+        foldnum += 1
+        [tr_data, val_data, tr_targets, val_targets] = helper.folds_to_split(x_train, y_train, train, val)
+        tr_targets = tr_targets.as_matrix().ravel()
+        val_targets = val_targets.as_matrix().ravel()
+
+        for n in range(1, 25):
+            for w in ["uniform", "distance"]:
+                clf = svm.SVC(kernel="rbf", )
+                clf.fit(tr_data, tr_targets)
+                prediction = clf.predict(val_data)
+                accuracy = metrics.accuracy_score(prediction, val_targets)
+                if w == "uniform":
+                    result_df_uniform.loc[foldnum, "neigbhours={0}".format(n)] = accuracy
+                elif w == "distance":
+                    result_df_distance.loc[foldnum, "neigbhours={0}".format(n)] = accuracy
+
+
+
 
 def knn_variation(x_train, y_train):
     result_df_uniform = pd.DataFrame()
@@ -51,9 +74,8 @@ def knn_variation(x_train, y_train):
                     result_df_uniform.loc[foldnum, "neigbhours={0}".format(n)] = accuracy
                 elif w == "distance":
                     result_df_distance.loc[foldnum, "neigbhours={0}".format(n)] = accuracy
+
     return result_df_uniform, result_df_distance
-
-
 
 
 def Random_forest_variation(x_train, y_train):
@@ -76,8 +98,6 @@ def Random_forest_variation(x_train, y_train):
         accuracy = metrics.accuracy_score(prediction, val_targets)
         result_df.loc[foldnum, "default"] = accuracy
     return result_df
-
-
 
 
 def dtree_variations(x_train, y_train):
@@ -105,9 +125,6 @@ def dtree_variations(x_train, y_train):
         result_df.loc[foldnum, "best setting"] = accuracy_best
 
     return result_df
-
-
-
 
 
 def feature_selection(x_train, y_train):
