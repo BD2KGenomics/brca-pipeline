@@ -6,6 +6,9 @@ import textwrap
 
 def bar_plot(df):
     n_groups = len(df.columns)
+
+    columns = df.mean().sort(inplace=False).index.tolist()
+    print columns
     means = [i for i in df.mean().sort(inplace=False)]
     std = [i for i in df.describe().loc["std"]]
     index = np.arange(n_groups)
@@ -27,7 +30,7 @@ def bar_plot(df):
     plt.xlabel("")
     # plt.title('')
 
-    labels=[text.split("=")[-1] for text in df.columns]
+    labels=[text.split("=")[-1] for text in columns]
     plt.xticks(index + bar_width/2, labels)
     for x, y in zip(index, means):
         plt.text(x, y + 0.002, str(y)[0:5])
@@ -76,11 +79,8 @@ def two_series_bar_plot(df1, df2):
     # for x, y in zip(index, means[0]):
     #     plt.text(x, y + 0.002, str(y)[0:5])
     plt.legend()
-
     plt.tight_layout()
     plt.show()
-
-
 
 
 

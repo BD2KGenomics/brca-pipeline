@@ -10,26 +10,25 @@ from matplotlib import pyplot as plt
 import plot_example
 import helper
 
-ALL_ALGOS = {"Decision tree": tree.DecisionTreeClassifier(max_depth=7, min_samples_leaf=10),
-             "Random Forest": ensemble.RandomForestClassifier(max_depth=6, n_estimators=50),
-             "KNN": neighbors.KNeighborsClassifier(n_neighbors=4, weights="distance"),
+ALL_ALGOS = {"Decision tree": tree.DecisionTreeClassifier(), #max_depth=7, min_samples_leaf=10),
+             "Random Forest": ensemble.RandomForestClassifier(), #max_depth=6, n_estimators=50),
+             "KNN": neighbors.KNeighborsClassifier(), #, n_neighbors=4, weights="distance"),
              "Logistic regression": linear_model.LogisticRegression(),
              "SVM Linear": svm.SVC(kernel="linear"),
              "SVM RBF": svm.SVC(kernel="rbf"),
              "Ada Boost": ensemble.AdaBoostClassifier(),
              "Perceptron": linear_model.Perceptron(n_iter=100)}
 
-
 def main():
     df = pd.read_csv("data/BRCA_data_with_label_final")
     df_encoded = encode_label(df)
     data, label = data_label_split(df_encoded)
-
     x_train, x_test, y_train, y_test = cross_validation.train_test_split(
         data, label, test_size=0.1, random_state=0)
-    result = tenfold_cross_validation(x_train, y_train, ALL_ALGOS)
+    result = svm_variation(x_train, y_train)
     print result.mean()
     plot_example.bar_plot(result)
+
 
 def svm_variation(x_train, y_train):
     result_df = pd.DataFrame()
@@ -50,7 +49,7 @@ def svm_variation(x_train, y_train):
                     result_df_uniform.loc[foldnum, "neigbhours={0}".format(n)] = accuracy
                 elif w == "distance":
                     result_df_distance.loc[foldnum, "neigbhours={0}".format(n)] = accuracy
-
+    return result_df
 
 
 
