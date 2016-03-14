@@ -15,7 +15,7 @@ ALL_ALGOS = {"Decision tree": tree.DecisionTreeClassifier(), #max_depth=7, min_s
              "KNN": neighbors.KNeighborsClassifier(), #, n_neighbors=4, weights="distance"),
              "Logistic regression": linear_model.LogisticRegression(),
              "SVM Linear": svm.SVC(kernel="linear"),
-             "SVM RBF": svm.SVC(kernel="rbf"),
+             "SVM RBF": svm.SVC(kernel="rbf"), #C=3),
              "Ada Boost": ensemble.AdaBoostClassifier(),
              "Perceptron": linear_model.Perceptron(n_iter=100)}
 
@@ -30,6 +30,9 @@ def main():
     plot_example.bar_plot(result)
 
 
+
+
+
 def svm_variation(x_train, y_train):
     result_df = pd.DataFrame()
     foldnum = 0
@@ -39,18 +42,13 @@ def svm_variation(x_train, y_train):
         tr_targets = tr_targets.as_matrix().ravel()
         val_targets = val_targets.as_matrix().ravel()
 
-        for n in range(1, 25):
-            for w in ["uniform", "distance"]:
-                clf = svm.SVC(kernel="rbf", )
-                clf.fit(tr_data, tr_targets)
-                prediction = clf.predict(val_data)
-                accuracy = metrics.accuracy_score(prediction, val_targets)
-                if w == "uniform":
-                    result_df_uniform.loc[foldnum, "neigbhours={0}".format(n)] = accuracy
-                elif w == "distance":
-                    result_df_distance.loc[foldnum, "neigbhours={0}".format(n)] = accuracy
+        for C in [0.1, 0.3, 0.5, 0.7, 1, 2, 3, 4, 5, 10, 100, 10**3, 10**5, 10**7, 10**9]:
+            clf = svm.SVC(kernel="rbf", C=C)
+            clf.fit(tr_data, tr_targets)
+            prediction = clf.predict(val_data)
+            accuracy = metrics.accuracy_score(prediction, val_targets)
+            result_df.loc[foldnum, "C={0}".format(C)] = accuracy
     return result_df
-
 
 
 def knn_variation(x_train, y_train):
