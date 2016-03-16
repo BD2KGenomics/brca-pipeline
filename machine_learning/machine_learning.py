@@ -19,17 +19,78 @@ ALL_ALGOS = {"Decision tree": tree.DecisionTreeClassifier(), #max_depth=7, min_s
              "Ada Boost": ensemble.AdaBoostClassifier(),
              "Perceptron": linear_model.Perceptron(n_iter=100)}
 
+FINAL_ALGOS = {"Decision tree": tree.DecisionTreeClassifier(max_depth=7, min_samples_leaf=10),
+             "Random Forest": ensemble.RandomForestClassifier(max_depth=6, n_estimators=50),
+             "KNN": neighbors.KNeighborsClassifier(n_neighbors=4, weights="distance"),
+             "SVM RBF": svm.SVC(kernel="rbf", C=3, probability=True),
+             "Ada Boost": ensemble.AdaBoostClassifier(),}
+
+
 def main():
     df = pd.read_csv("data/BRCA_data_with_label_final")
     df_encoded = encode_label(df)
     data, label = data_label_split(df_encoded)
     x_train, x_test, y_train, y_test = cross_validation.train_test_split(
         data, label, test_size=0.1, random_state=0)
-    result = svm_variation(x_train, y_train)
-    print result.mean()
+    result1 = tenfold_cross_validation(x_train, y_train, FINAL_ALGOS)
+    result2 = majority_vote(x_train, y_train)
+    result = pd.concat([result1, result2], axis=1)
+    print result
     plot_example.bar_plot(result)
 
+def lr_variation(x_train, y_train):
+    result_df = pd.DataFrame()
+    foldnum = 0
+    for train, val in cross_validation.KFold(len(x_train), shuffle=True, n_folds=10, random_state=0):
+        foldnum += 1
+        [tr_data, val_data, tr_targets, val_targets] = helper.folds_to_split(x_train, y_train, train, val)
+        tr_targets = tr_targets.as_matrix().ravel()
+        val_targets = val_targets.as_matrix().ravel()
 
+        for C in [0.1, 0.5, 1, 3, 5, 10, 100, 10**3]:
+            for p in ["l1", "l2"]:
+                clf = linear_model.LogisticRegression(C=C, penalty=p)
+                clf.fit(tr_data, tr_targets)
+                prediction = clf.predict(val_data)
+                accuracy = metrics.accuracy_score(prediction, val_targets)
+                result_df.loc[foldnum, "C={0}, p={1}".format(C, p)] = accuracy
+    return result_df
+
+
+def majority_vote(x_train, y_train):
+    result_df = pd.DataFrame()
+    foldnum = 0
+    for train, val in cross_validation.KFold(len(x_train), shuffle=True, n_folds=10, random_state=0):
+        foldnum += 1
+        [tr_data, val_data, tr_targets, val_targets] = helper.folds_to_split(x_train, y_train, train, val)
+        tr_targets = tr_targets.as_matrix().ravel()
+        val_targets = val_targets.as_matrix().ravel()
+
+        final_estimators = [(i, FINAL_ALGOS[i]) for i in FINAL_ALGOS.keys()]
+        clf = ensemble.VotingClassifier(estimators=final_estimators)
+        clf.fit(tr_data, tr_targets)
+        prediction = clf.predict(val_data)
+        accuracy = metrics.accuracy_score(prediction, val_targets)
+        result_df.loc[foldnum, "voting"] = accuracy
+    return result_df
+
+
+def ada_boost_variation(x_train, y_train):
+    result_df = pd.DataFrame()
+    foldnum = 0
+    for train, val in cross_validation.KFold(len(x_train), shuffle=True, n_folds=10, random_state=0):
+        foldnum += 1
+        [tr_data, val_data, tr_targets, val_targets] = helper.folds_to_split(x_train, y_train, train, val)
+        tr_targets = tr_targets.as_matrix().ravel()
+        val_targets = val_targets.as_matrix().ravel()
+
+        for n in [5, 10, 50, 100, 500, 1000]:
+            clf = ensemble.AdaBoostClassifier(n_estimators=n)
+            clf.fit(tr_data, tr_targets)
+            prediction = clf.predict(val_data)
+            accuracy = metrics.accuracy_score(prediction, val_targets)
+            result_df.loc[foldnum, "n estimator={0}".format(n)] = accuracy
+    return result_df
 
 
 
@@ -149,15 +210,6 @@ def tenfold_cross_validation(x_train, y_train, classifiers):
             accuracy = metrics.accuracy_score(prediction, val_targets)
             result_df.loc[foldnum, classfier_name] = accuracy
     return result_df
-
-def majority_vote(tr_data, tr_targets, val_data, val_targets):
-    good_classifiers = ["Decision tree", "Random Forest", "KNN", "SVM", "Ada Boost"]
-    estimators = [(i, ALL_ALGOS[i]) for i in good_classifiers]
-    voting = ensemble.VotingClassifier(estimators=estimators)
-    voting.fit(tr_data, tr_targets)
-    prediction = voting.predict(val_data)
-    accuracy = metrics.accuracy_score(prediction, val_targets)
-    return accuracy
 
 
 def visualize_tree(dtree):

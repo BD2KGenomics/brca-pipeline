@@ -7,10 +7,9 @@ import textwrap
 def bar_plot(df):
     n_groups = len(df.columns)
 
-    #columns = df.mean().sort(inplace=False).index.tolist()
-    #print columns
-    #means = [i for i in df.mean().sort(inplace=False)]
-    means = [i for i in df.mean()]
+    columns = df.mean().sort(inplace=False).index.tolist()
+    means = [i for i in df.mean().sort(inplace=False)]
+    #means = [i for i in df.mean()]
     std = [i for i in df.describe().loc["std"]]
     index = np.arange(n_groups)
     bar_width = 0.9
@@ -28,7 +27,7 @@ def bar_plot(df):
 
     plt.ylim([0.88, 1])
     plt.ylabel('Accuracy Score')
-    plt.xlabel("penalty parameter C")
+    plt.xlabel("post paramter tuning")
     # plt.title('')
 
     labels=[text.split("=")[-1] for text in df.columns]
