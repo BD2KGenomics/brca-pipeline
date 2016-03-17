@@ -40,49 +40,38 @@ def bar_plot(df):
     plt.show()
 
 
-def two_series_bar_plot(df1, df2):
-    n_groups = len(df1.columns)
-    means = []
+def two_series_bar_plot(result1, result2):
+    n_groups = len(result2)
+    columns = sorted(result2.keys())
+    means = [[], []]
     stds = []
-    for df in [df1, df2]:
-        means.append([i for i in df.mean()])
-        stds.append([i for i in df.describe().loc["std"]])
+    for index, result in enumerate([result1.mean().to_dict(), result2]):
+        for column in columns:
+            means[index].append(result[column])
+    for column in columns:
+        stds.append(result1.describe().loc["std"].to_dict()[column])
+
+
     index = np.arange(n_groups)
     bar_width = 0.4
-
     opacity = 0.4
-    error_config = {'ecolor': '0.3'}
-
     rect1 = plt.bar(index, means[0], bar_width,
-                 alpha=opacity,
-                 color='b',
-                 yerr=stds[0],
-                 error_kw=error_config,
-                 label='uniform weight')
-
+                    alpha=opacity,
+                    yerr=stds,
+                    color='b')
     rect2 = plt.bar(index+bar_width, means[1], bar_width,
                  alpha=opacity,
-                 color='r',
-                 yerr=stds[1],
-                 error_kw=error_config,
-                 label='distance weight')
-
-
-
+                 color='r')
     plt.ylim([0.88, 1])
     plt.ylabel('Accuracy Score')
-    plt.xlabel("number of neighbor")
-    # plt.title('')
+    plt.xlabel("")
+    plt.title('Comparing validation and test accuracy')
 
-    labels=[text.split("=")[-1] for text in df1.columns]
+    labels = [text for text in columns]
     plt.xticks(index + bar_width, labels)
-    # for x, y in zip(index, means[0]):
-    #     plt.text(x, y + 0.002, str(y)[0:5])
-    plt.legend()
+    plt.legend(["cross validation accuracy", "test accuracy"])
     plt.tight_layout()
     plt.show()
-
-
 
 if __name__ == "__main__":
     bar_plot(df=pd.DataFrame())

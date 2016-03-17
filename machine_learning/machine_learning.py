@@ -10,12 +10,12 @@ from matplotlib import pyplot as plt
 import plot_example
 import helper
 
-ALL_ALGOS = {"Decision tree": tree.DecisionTreeClassifier(), #max_depth=7, min_samples_leaf=10),
-             "Random Forest": ensemble.RandomForestClassifier(), #max_depth=6, n_estimators=50),
-             "KNN": neighbors.KNeighborsClassifier(), #, n_neighbors=4, weights="distance"),
+ALL_ALGOS = {"Decision tree": tree.DecisionTreeClassifier(),
+             "Random Forest": ensemble.RandomForestClassifier(),
+             "KNN": neighbors.KNeighborsClassifier(),
              "Logistic regression": linear_model.LogisticRegression(),
              "SVM Linear": svm.SVC(kernel="linear"),
-             "SVM RBF": svm.SVC(kernel="rbf"), #C=3),
+             "SVM RBF": svm.SVC(kernel="rbf"),
              "Ada Boost": ensemble.AdaBoostClassifier(),
              "Perceptron": linear_model.Perceptron(n_iter=100)}
 
@@ -23,7 +23,7 @@ FINAL_ALGOS = {"Decision tree": tree.DecisionTreeClassifier(max_depth=7, min_sam
              "Random Forest": ensemble.RandomForestClassifier(max_depth=6, n_estimators=50),
              "KNN": neighbors.KNeighborsClassifier(n_neighbors=4, weights="distance"),
              "SVM RBF": svm.SVC(kernel="rbf", C=3, probability=True),
-             "Ada Boost": ensemble.AdaBoostClassifier(),}
+             "Ada Boost": ensemble.AdaBoostClassifier(n_estimators=50),}
 
 
 def main():
@@ -33,10 +33,31 @@ def main():
     x_train, x_test, y_train, y_test = cross_validation.train_test_split(
         data, label, test_size=0.1, random_state=0)
     result1 = tenfold_cross_validation(x_train, y_train, FINAL_ALGOS)
-    result2 = majority_vote(x_train, y_train)
-    result = pd.concat([result1, result2], axis=1)
-    print result
-    plot_example.bar_plot(result)
+    vote = majority_vote(x_train, y_train)
+    result1 = pd.concat([result1, vote], axis=1)
+    result2 = real_test(x_train, y_train, x_test, y_test, FINAL_ALGOS)
+
+    print result1
+    print result2
+
+    plot_example.two_series_bar_plot(result1, result2)
+
+def real_test(x_train, y_train, x_test, y_test, FINAL_ALGO):
+    results = {}
+    voting_estimators = []
+    for classfier_name, clf in FINAL_ALGOS.iteritems():
+        voting_estimators.append((classfier_name, clf))
+        clf.fit(x_train, y_train)
+        prediction = clf.predict(x_test)
+        accuracy = metrics.accuracy_score(prediction, y_test)
+        results[classfier_name] = accuracy
+    clf = ensemble.VotingClassifier(estimators=voting_estimators)
+    clf.fit(x_train, y_train)
+    accuracy = metrics.accuracy_score(clf.predict(x_test), y_test)
+    results["Voting"] = accuracy
+    return results
+
+
 
 def lr_variation(x_train, y_train):
     result_df = pd.DataFrame()
@@ -71,7 +92,7 @@ def majority_vote(x_train, y_train):
         clf.fit(tr_data, tr_targets)
         prediction = clf.predict(val_data)
         accuracy = metrics.accuracy_score(prediction, val_targets)
-        result_df.loc[foldnum, "voting"] = accuracy
+        result_df.loc[foldnum, "Voting"] = accuracy
     return result_df
 
 
