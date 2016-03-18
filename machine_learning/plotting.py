@@ -73,5 +73,42 @@ def two_series_bar_plot(result1, result2):
     plt.tight_layout()
     plt.show()
 
+def lr_plot(result1, result2):
+    n_groups = len(result2)
+    columns = result2.columns
+    means = [[], []]
+    stds = [[], []]
+    for column in columns:
+        means[0].append(result1.mean()[column])
+        stds[0].append(result1.describe().loc["std"].to_dict()[column])
+        means[1].append(result2.mean()[column])
+        stds[1].append(result2.describe().loc["std"].to_dict()[column])
+
+    print means
+    print stds
+
+    index = np.arange(n_groups)
+    bar_width = 0.4
+    opacity = 0.4
+    rect1 = plt.bar(index, means[0], bar_width,
+                    alpha=opacity,
+                    yerr=stds,
+                    color='b')
+    rect2 = plt.bar(index+bar_width, means[1], bar_width,
+                 alpha=opacity,
+                 color='r')
+    plt.ylim([0.88, 1])
+    plt.ylabel('Accuracy Score')
+    plt.xlabel("")
+    plt.title('Comparing validation and test accuracy')
+
+    labels = [text for text in columns]
+    plt.xticks(index + bar_width, labels)
+    plt.legend(["cross validation accuracy", "test accuracy"])
+    plt.tight_layout()
+    plt.show()
+
+
+
 if __name__ == "__main__":
     bar_plot(df=pd.DataFrame())

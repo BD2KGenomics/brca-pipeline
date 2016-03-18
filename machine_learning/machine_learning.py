@@ -29,6 +29,7 @@ FINAL_ALGOS = {"Decision tree": tree.DecisionTreeClassifier(max_depth=7, min_sam
 def main():
     df = pd.read_csv("data/BRCA_data_with_label_final")
     df_encoded = encode_label(df)
+
     data, label = data_label_split(df_encoded)
     x_train, x_test, y_train, y_test = cross_validation.train_test_split(
         data, label, test_size=0.1, random_state=0)
@@ -39,9 +40,10 @@ def main():
     # print result1
     # print result2
 
-    result = perceptron_variation(x_train, y_train)
-    print result
-    plotting.bar_plot(result)
+    result1, result2, weight_df = lr_variation(x_train, y_train)
+    print weight_df
+
+    plotting.two_series_bar_plot(result1, result2)
     #plot_example.two_series_bar_plot(result1, result2)
 
 def perceptron_variation(x_train, y_train):
@@ -81,7 +83,10 @@ def real_test(x_train, y_train, x_test, y_test, FINAL_ALGO):
 
 
 def lr_variation(x_train, y_train):
-    result_df = pd.DataFrame()
+    result_df1 = pd.DataFrame()
+    result_df2 = pd.DataFrame()
+    weight_row_list = []
+
     foldnum = 0
     for train, val in cross_validation.KFold(len(x_train), shuffle=True, n_folds=10, random_state=0):
         foldnum += 1
@@ -89,14 +94,29 @@ def lr_variation(x_train, y_train):
         tr_targets = tr_targets.as_matrix().ravel()
         val_targets = val_targets.as_matrix().ravel()
 
-        for C in [0.1, 0.5, 1, 3, 5, 10, 100, 10**3]:
-            for p in ["l1", "l2"]:
-                clf = linear_model.LogisticRegression(C=C, penalty=p)
-                clf.fit(tr_data, tr_targets)
-                prediction = clf.predict(val_data)
-                accuracy = metrics.accuracy_score(prediction, val_targets)
-                result_df.loc[foldnum, "C={0}, p={1}".format(C, p)] = accuracy
-    return result_df
+        # L1 regularization
+        for C in [0.1, 1, 5, 10, 100, 10**3]:
+            clf = linear_model.LogisticRegression(C=C, penalty="l1")
+            clf.fit(tr_data, tr_targets)
+            prediction = clf.predict(val_data)
+            accuracy = metrics.accuracy_score(prediction, val_targets)
+            result_df1.loc[foldnum, "C={0}".format(C)] = accuracy
+            weight_dict = dict(zip(x_train.columns, clf.coef_[0]))
+            weight_row_list.append(weight_dict)
+
+        # L2 regularization
+        for C in [0.1, 1, 5, 10, 100, 10**3]:
+            clf = linear_model.LogisticRegression(C=C, penalty="l2")
+            clf.fit(tr_data, tr_targets)
+            prediction = clf.predict(val_data)
+            accuracy = metrics.accuracy_score(prediction, val_targets)
+            result_df1.loc[foldnum, "C={0}".format(C)] = accuracy
+            weight_dict = dict(zip(x_train.columns, clf.coef_[0]))
+            weight_row_list.append(weight_dict)
+
+    weight_df = pd.DataFrame.from_dict(weight_row_list)
+
+    return result_df1, result_df2, weight_df
 
 
 def majority_vote(x_train, y_train):
