@@ -7,7 +7,7 @@ import pydot
 from matplotlib import pyplot as plt
 
 
-import plot_example
+import plotting
 import helper
 
 ALL_ALGOS = {"Decision tree": tree.DecisionTreeClassifier(),
@@ -32,15 +32,36 @@ def main():
     data, label = data_label_split(df_encoded)
     x_train, x_test, y_train, y_test = cross_validation.train_test_split(
         data, label, test_size=0.1, random_state=0)
-    result1 = tenfold_cross_validation(x_train, y_train, FINAL_ALGOS)
-    vote = majority_vote(x_train, y_train)
-    result1 = pd.concat([result1, vote], axis=1)
-    result2 = real_test(x_train, y_train, x_test, y_test, FINAL_ALGOS)
+    # result1 = tenfold_cross_validation(x_train, y_train, FINAL_ALGOS)
+    # vote = majority_vote(x_train, y_train)
+    # result1 = pd.concat([result1, vote], axis=1)
+    # result2 = real_test(x_train, y_train, x_test, y_test, FINAL_ALGOS)
+    # print result1
+    # print result2
 
-    print result1
-    print result2
+    result = perceptron_variation(x_train, y_train)
+    print result
+    plotting.bar_plot(result)
+    #plot_example.two_series_bar_plot(result1, result2)
 
-    plot_example.two_series_bar_plot(result1, result2)
+def perceptron_variation(x_train, y_train):
+    result_df = pd.DataFrame()
+    foldnum = 0
+    for train, val in cross_validation.KFold(len(x_train), shuffle=True, n_folds=10, random_state=0):
+        foldnum += 1
+        [tr_data, val_data, tr_targets, val_targets] = helper.folds_to_split(x_train, y_train, train, val)
+        tr_targets = tr_targets.as_matrix().ravel()
+        val_targets = val_targets.as_matrix().ravel()
+
+        for n in [1, 5, 10, 50, 100, 500, 1000]:
+            clf = linear_model.Perceptron(n_iter=n)
+            clf.fit(tr_data, tr_targets)
+            prediction = clf.predict(val_data)
+            accuracy = metrics.accuracy_score(prediction, val_targets)
+            result_df.loc[foldnum, "n_iter={0}".format(n)] = accuracy
+    return result_df
+
+
 
 def real_test(x_train, y_train, x_test, y_test, FINAL_ALGO):
     results = {}

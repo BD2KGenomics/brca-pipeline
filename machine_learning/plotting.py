@@ -25,9 +25,9 @@ def bar_plot(df):
                      #label='haha'
                            )
 
-    plt.ylim([0.88, 1])
+    plt.ylim([0.6, 1])
     plt.ylabel('Accuracy Score')
-    plt.xlabel("post paramter tuning")
+    plt.xlabel("Number of Iterations")
     # plt.title('')
 
     labels=[text.split("=")[-1] for text in df.columns]

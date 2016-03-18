@@ -3,7 +3,7 @@ import ast
 import pandas_profiling
 import numpy as np
 from matplotlib import pyplot as plt
-import plot_example
+import plotting
 
 
 
