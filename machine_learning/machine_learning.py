@@ -41,9 +41,9 @@ def main():
     # print result2
 
     result1, result2, weight_df = lr_variation(x_train, y_train)
-    print weight_df
 
-    plotting.two_series_bar_plot(result1, result2)
+    #plotting.lr_plot(result1, result2)
+    plotting.bar_plot(weight_df)
     #plot_example.two_series_bar_plot(result1, result2)
 
 def perceptron_variation(x_train, y_train):
@@ -110,7 +110,7 @@ def lr_variation(x_train, y_train):
             clf.fit(tr_data, tr_targets)
             prediction = clf.predict(val_data)
             accuracy = metrics.accuracy_score(prediction, val_targets)
-            result_df1.loc[foldnum, "C={0}".format(C)] = accuracy
+            result_df2.loc[foldnum, "C={0}".format(C)] = accuracy
             weight_dict = dict(zip(x_train.columns, clf.coef_[0]))
             weight_row_list.append(weight_dict)
 
