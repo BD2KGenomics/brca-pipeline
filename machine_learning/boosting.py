@@ -12,12 +12,10 @@ from sklearn.tree import DecisionTreeClassifier
 import numpy as np
 
 
-
-
 class Adaboost():
     def __init__(self,
                  base_estimator=DecisionTreeClassifier,
-                 n_estimators=2,
+                 n_estimators=10,
                  initial_learning_rate=1.):
         self.base_estimator = base_estimator
         self.n_estimators = n_estimators
@@ -27,28 +25,39 @@ class Adaboost():
         n = len(y)
         d = np.zeros([self.n_estimators + 1, n])
         d[0] = np.array([1.0/n] * n)
-        print d
 
-        w = np.array([0] * self.n_estimators)
+        w = np.array([0.0] * self.n_estimators)
         w[0] = self.initial_learning_rate
+        classifiers = []
+
         for t in range(self.n_estimators):
             clf = self.base_estimator()
-            clf.fit(x, y)
+            clf.fit(x, y, sample_weight=d[t])
             y_predict = clf.predict(x)
             u = (y_predict == y.as_matrix()).astype(int)
             u[u==0] = -1
-            w[t] = np.log((1 + np.dot(d[t], u))/(1 - np.dot(d[t], u)))/2
+            accuracy = np.dot(d[t], u)
+
+
+            w[t] = np.log((1+accuracy)/(1-accuracy))/2
             d[t+1] = d[t] * np.exp(-w[t] * u)
+            d[t+1] = d[t+1]/d[t+1].sum() # normalize to sum 1
+
+            classifiers.append(clf)
+
+        self.classifiers = classifiers
+        self.classifier_weights = w
+        return self
+
+    def predict(self):
+        pass
 
 
 
-
-            if (u==1).sum() == 0:
-                pass
-                # do something about perfect classification
-
-
-
+    def normalize_to_sum_one(self, v):
+        """normalize a vector so that the sum all all numbers are one"""
+        normalized = v/v.sum()
+        print normalized.sum()
 
 
 
