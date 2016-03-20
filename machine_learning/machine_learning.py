@@ -44,10 +44,7 @@ def main():
     print result.mean()
 
 def boosting_cv(x_train, y_train, classifiers):
-    base_learners = {"DecisionTree": tree.DecisionTreeClassifier(),
-                 "rbfSVM": svm.SVC(kernel="rbf", probability=True),
-                 "linearSVM": svm.SVC(kernel="linear", probability=True)}
-
+    base_learner = tree.DecisionTreeClassifier()
     result_df = pd.DataFrame()
     foldnum = 0
     for train, val in cross_validation.KFold(len(x_train), shuffle=True, n_folds=10, random_state=0):
@@ -57,17 +54,12 @@ def boosting_cv(x_train, y_train, classifiers):
         val_targets = val_targets.as_matrix().ravel()
 
         for classfier_name, classifier in classifiers.iteritems():
-            for base_learner_name, base_learner in base_learners.iteritems():
                 clf = classifier(n_estimators=10, base_estimator=base_learner)
                 clf.fit(tr_data, tr_targets)
                 prediction = clf.predict(val_data)
                 accuracy = metrics.accuracy_score(prediction, val_targets)
-                result_df.loc[foldnum, "{0} {1}".format(classfier_name, base_learner_name)] = accuracy
+                result_df.loc[foldnum, "{0}".format(classfier_name)] = accuracy
     return result_df
-
-
-
-
 
 
 
