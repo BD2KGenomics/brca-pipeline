@@ -6,9 +6,10 @@ from sklearn.externals.six import StringIO
 import pydot
 from matplotlib import pyplot as plt
 
-
 import plotting
 import helper
+import boosting
+
 
 ALL_ALGOS = {"Decision tree": tree.DecisionTreeClassifier(),
              "Random Forest": ensemble.RandomForestClassifier(),
@@ -25,6 +26,11 @@ FINAL_ALGOS = {"Decision tree": tree.DecisionTreeClassifier(max_depth=7, min_sam
              "SVM RBF": svm.SVC(kernel="rbf", C=3, probability=True),
              "Ada Boost": ensemble.AdaBoostClassifier(n_estimators=50),}
 
+BOOSTING = {"Adaboost_sklearn": ensemble.AdaBoostClassifier}
+            # "Adaboost_Molly": boosting.Adaboost(),
+            # "LPboost": boosting.LPboost()}
+
+
 
 def main():
     df = pd.read_csv("data/BRCA_data_with_label_final")
@@ -33,18 +39,54 @@ def main():
     data, label = data_label_split(df_encoded)
     x_train, x_test, y_train, y_test = cross_validation.train_test_split(
         data, label, test_size=0.1, random_state=0)
-    # result1 = tenfold_cross_validation(x_train, y_train, FINAL_ALGOS)
-    # vote = majority_vote(x_train, y_train)
-    # result1 = pd.concat([result1, vote], axis=1)
-    # result2 = real_test(x_train, y_train, x_test, y_test, FINAL_ALGOS)
-    # print result1
-    # print result2
+    result = boosting_cv(x_train, y_train, BOOSTING)
+    print result
+    print result.mean()
 
-    result1, result2, weight_df = lr_variation(x_train, y_train)
+def boosting_cv(x_train, y_train, classifiers):
+    base_learners = {"DecisionTree": tree.DecisionTreeClassifier(),
+                 "rbfSVM": svm.SVC(kernel="rbf", probability=True),
+                 "linearSVM": svm.SVC(kernel="linear", probability=True)}
 
-    #plotting.lr_plot(result1, result2)
-    plotting.bar_plot(weight_df)
-    #plot_example.two_series_bar_plot(result1, result2)
+    result_df = pd.DataFrame()
+    foldnum = 0
+    for train, val in cross_validation.KFold(len(x_train), shuffle=True, n_folds=10, random_state=0):
+        foldnum += 1
+        [tr_data, val_data, tr_targets, val_targets] = helper.folds_to_split(x_train, y_train, train, val)
+        tr_targets = tr_targets.as_matrix().ravel()
+        val_targets = val_targets.as_matrix().ravel()
+
+        for classfier_name, classifier in classifiers.iteritems():
+            for base_learner_name, base_learner in base_learners.iteritems():
+                clf = classifier(n_estimators=10, base_estimator=base_learner)
+                clf.fit(tr_data, tr_targets)
+                prediction = clf.predict(val_data)
+                accuracy = metrics.accuracy_score(prediction, val_targets)
+                result_df.loc[foldnum, "{0} {1}".format(classfier_name, base_learner_name)] = accuracy
+    return result_df
+
+
+
+
+
+
+
+def tenfold_cross_validation(x_train, y_train, classifiers):
+    result_df = pd.DataFrame()
+    foldnum = 0
+    for train, val in cross_validation.KFold(len(x_train), shuffle=True, n_folds=10, random_state=0):
+        foldnum += 1
+        [tr_data, val_data, tr_targets, val_targets] = helper.folds_to_split(x_train, y_train, train, val)
+        tr_targets = tr_targets.as_matrix().ravel()
+        val_targets = val_targets.as_matrix().ravel()
+
+        for classfier_name, clf in classifiers.iteritems():
+            clf.fit(tr_data, tr_targets)
+            prediction = clf.predict(val_data)
+            accuracy = metrics.accuracy_score(prediction, val_targets)
+            result_df.loc[foldnum, classfier_name] = accuracy
+    return result_df
+
 
 def perceptron_variation(x_train, y_train):
     result_df = pd.DataFrame()
@@ -64,7 +106,6 @@ def perceptron_variation(x_train, y_train):
     return result_df
 
 
-
 def real_test(x_train, y_train, x_test, y_test, FINAL_ALGO):
     results = {}
     voting_estimators = []
@@ -79,7 +120,6 @@ def real_test(x_train, y_train, x_test, y_test, FINAL_ALGO):
     accuracy = metrics.accuracy_score(clf.predict(x_test), y_test)
     results["Voting"] = accuracy
     return results
-
 
 
 def lr_variation(x_train, y_train):
@@ -153,7 +193,6 @@ def ada_boost_variation(x_train, y_train):
             accuracy = metrics.accuracy_score(prediction, val_targets)
             result_df.loc[foldnum, "n estimator={0}".format(n)] = accuracy
     return result_df
-
 
 
 def svm_variation(x_train, y_train):
@@ -256,22 +295,6 @@ def feature_selection(x_train, y_train):
         print "\ndrop out:" + column
         print result.mean()
         print "mean:", result.mean().mean()
-
-
-def tenfold_cross_validation(x_train, y_train, classifiers):
-    result_df = pd.DataFrame()
-    foldnum = 0
-    for train, val in cross_validation.KFold(len(x_train), shuffle=True, n_folds=10, random_state=0):
-        foldnum += 1
-        [tr_data, val_data, tr_targets, val_targets] = helper.folds_to_split(x_train, y_train, train, val)
-        tr_targets = tr_targets.as_matrix().ravel()
-        val_targets = val_targets.as_matrix().ravel()
-        for classfier_name, clf in classifiers.iteritems():
-            clf.fit(tr_data, tr_targets)
-            prediction = clf.predict(val_data)
-            accuracy = metrics.accuracy_score(prediction, val_targets)
-            result_df.loc[foldnum, classfier_name] = accuracy
-    return result_df
 
 
 def visualize_tree(dtree):
