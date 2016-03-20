@@ -46,11 +46,17 @@ class Adaboost():
             classifiers.append(clf)
 
         self.classifiers = classifiers
-        self.classifier_weights = w
+        self.classifier_weights = w/w.sum()
+        print w/w.sum()
         return self
 
-    def predict(self):
-        pass
+    def predict(self, x):
+        y_predict = np.array([0.0]*len(x))
+        for index, clf in enumerate(self.classifiers):
+            y_predict += clf.predict(x) * self.classifier_weights[index]
+        y_predict[y_predict>=0.5] = 1
+        y_predict[y_predict<0.5] = 0
+        return y_predict
 
 
 
