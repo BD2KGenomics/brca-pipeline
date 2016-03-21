@@ -26,8 +26,8 @@ FINAL_ALGOS = {"Decision tree": tree.DecisionTreeClassifier(max_depth=7, min_sam
              "SVM RBF": svm.SVC(kernel="rbf", C=3, probability=True),
              "Ada Boost": ensemble.AdaBoostClassifier(n_estimators=50),}
 
-BOOSTING = {"Adaboost_sklearn": ensemble.AdaBoostClassifier}
-            # "Adaboost_Molly": boosting.Adaboost(),
+BOOSTING = {"Adaboost_sklearn": ensemble.AdaBoostClassifier,
+            "Adaboost_Molly": boosting.Adaboost}
             # "LPboost": boosting.LPboost()}
 
 
@@ -54,11 +54,11 @@ def boosting_cv(x_train, y_train, classifiers):
         val_targets = val_targets.as_matrix().ravel()
 
         for classfier_name, classifier in classifiers.iteritems():
-                clf = classifier(n_estimators=10, base_estimator=base_learner)
-                clf.fit(tr_data, tr_targets)
-                prediction = clf.predict(val_data)
-                accuracy = metrics.accuracy_score(prediction, val_targets)
-                result_df.loc[foldnum, "{0}".format(classfier_name)] = accuracy
+            clf = classifier(n_estimators=50, base_estimator=base_learner)
+            clf.fit(tr_data, tr_targets)
+            prediction = clf.predict(val_data)
+            accuracy = metrics.accuracy_score(prediction, val_targets)
+            result_df.loc[foldnum, "{0}".format(classfier_name)] = accuracy
     return result_df
 
 
