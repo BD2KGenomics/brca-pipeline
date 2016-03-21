@@ -13,6 +13,6 @@ data, label = machine_learning.data_label_split(df_encoded)
 x, x_test, y, y_test = cross_validation.train_test_split(data, label, test_size=0.1)
 
 y = y.as_matrix()
-clf = boosting.LPboost(n_estimators=3)
+clf = boosting.LPboost(n_estimators=2)
 clf.fit(x, y)
 #print metrics.accuracy_score(clf.predict(x_test), y_test)

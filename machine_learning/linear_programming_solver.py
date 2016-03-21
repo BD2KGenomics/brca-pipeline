@@ -2,8 +2,18 @@ import pulp as pp
 import numpy as np
 
 def main():
-    vector_solver()
+    LPboost_solver()
 
+
+
+
+def LPboost_solver():
+    d = pp.LpVariable.dicts("d", range(3), 0, 1)
+    prob = pp.LpProblem("LPboost", pp.LpMinimize)
+    prob += pp.lpSum(d) == 1
+    print pp.LpStatus[prob.solve()]
+    for i in range(3):
+        print pp.value(d[i])
 
 
 def vector_solver():

@@ -10,7 +10,7 @@ u: accuracy of prediction at each iteration
 """
 from sklearn.tree import DecisionTreeClassifier
 import numpy as np
-import pulp
+import pulp as pp
 
 class Adaboost():
     def __init__(self,
@@ -64,27 +64,38 @@ class LPboost():
         self.learning_rate = learning_rate
 
     def fit(self, x, y):
-        n = len(y)
-        d = np.zeros([self.n_estimators + 1, n])
-        d[0] = np.array([1.0/n] * n)
-
-        w = np.array([0.0] * self.n_estimators)
-        # edges = np.
-
         classifiers = []
+        classifier_weights = []
+        clf = self.base_estimator
 
-        for t in range(self.n_estimators):
-            clf = self.base_estimator
-            clf.fit(x, y, sample_weight=d[t])
-            y_predict = clf.predict(x)
-            u = (y_predict == y).astype(int)
-            u[u==0] = -1
-            accuracy = np.dot(d[t], u)
-            w[t] = np.log((1+accuracy)/(1-accuracy))/2
-            d[t+1] = d[t] * np.exp(-w[t] * u)
-            d[t+1] = d[t+1]/d[t+1].sum() # normalize to sum 1
-            classifiers.append(clf)
 
-        self.classifiers = classifiers
-        self.classifier_weights = w/w.sum()
-        return self
+        # get predictions of one classifer
+        clf.fit(x, y)
+        y_predict = clf.predict(x)
+        u = (y_predict == y).astype(int)
+        u[u == 0] = -1
+        for index, value in enumerate(u):
+            if value == -1:
+                print index
+
+
+        # solving linear programming
+        d = pp.LpVariable.dicts("d", range(len(y)), 0, 1)
+        prob = pp.LpProblem("LPboost", pp.LpMinimize)
+        prob += pp.lpSum(d) == 1  # constraint for sum of weights to be 1
+        # objective function
+        objective_vector = []
+        for index in range(len(y)):
+            objective_vector.append(d[index] * u[index])
+        prob += pp.lpSum(objective_vector)
+
+
+        print pp.LpStatus[prob.solve()]
+        for v in prob.variables():
+            if v.varValue > 0:
+                print v.name + "=" + str(v.varValue)
+
+
+
+
+
