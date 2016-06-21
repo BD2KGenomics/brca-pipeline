@@ -1,7 +1,7 @@
 import pysam
 chr13_fa = "/cluster/home/mollyzhang/reference_genome/hg19/chr13.fa"
 chr17_fa = "/cluster/home/mollyzhang/reference_genome/hg19/chr17.fa"
-brca1 = "/cluster/home/mollyzhang/brca_repo/resources/brca1_hg19_no_flanking.txt"
+brca1 = "/cluster/home/mollyzhang/brca-pipeline/resources/brca1_hg19_no_flanking.txt"
 brca2 = "/cluster/home/mollyzhang/brca-pipeline/resources/brca2_hg19_no_flanking.txt"
 
 chr13 = pysam.FastaFile(chr13_fa)
