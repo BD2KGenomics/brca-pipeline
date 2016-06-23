@@ -19,7 +19,7 @@ def create_vcf():
     f_out = open(VCF_FILE, "w")
     f_out.write("##fileformat=VCFv4.0\n")
     f_out.write("##reference=GRCh37\n")
-    #f_out.write("##INFO=<ID=,Number=.,Type=String,Description=\"\">\n")
+    f_out.write("##INFO=<ID=,Number=.,Type=String,Description=\"\">\n")
     f_out.write("\t".join(
         ["#CHROM", "POS", "ID", "REF", "ALT", "QUAL", "FILTER", "INFO\n"]))
     
