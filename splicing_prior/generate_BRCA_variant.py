@@ -53,10 +53,10 @@ def create_SNP_vcf():
         os.remove(each_file)
 
 
-def write_header():
+def write_header(version="GRCh38"):
     with open('vcf_header.txt', 'w') as f:
         f.write("##fileformat=VCFv4.0\n")
-        f.write("##reference=GRCh37\n")
+        f.write("##reference={0}\n".format(version))
         f.write("##INFO=<ID=Dummy,Number=.,Type=String,Description=\"\">\n")
         f.write("\t".join(
             ["#CHROM", "POS", "ID", "REF", "ALT", "QUAL", "FILTER", "INFO\n"]))
