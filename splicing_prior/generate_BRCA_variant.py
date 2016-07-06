@@ -54,13 +54,14 @@ def create_SNP_vcf():
 
 
 def write_header(version="GRCh38"):
-    with open('vcf_header.txt', 'w') as f:
+    with open('VCFSA_data/vcf_header.txt', 'w') as f:
         f.write("##fileformat=VCFv4.0\n")
         f.write("##reference={0}\n".format(version))
         f.write("##INFO=<ID=Dummy,Number=.,Type=String,Description=\"\">\n")
         f.write("\t".join(
             ["#CHROM", "POS", "ID", "REF", "ALT", "QUAL", "FILTER", "INFO\n"]))
         f.close()
+    print "vcf dummy header written"
 
 def check_ref_correct(v):
     chr, pos, ref, alt = v

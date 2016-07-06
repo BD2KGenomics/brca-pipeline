@@ -1,0 +1,4 @@
+##fileformat=VCFv4.0
+##reference=GRCh38
+##INFO=<ID=Dummy,Number=.,Type=String,Description="">
+#CHROM	POS	ID	REF	ALT	QUAL	FILTER	INFO
