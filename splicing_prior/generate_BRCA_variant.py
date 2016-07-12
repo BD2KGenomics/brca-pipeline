@@ -9,9 +9,9 @@ import os
 
 
 BRCA2 = {"start": 32889617,
-         "seq": open("../resources/brca2_hg19_no_flanking.txt", "r").read().upper()}
+         "seq": open("../resources/genome_sequences/brca2_hg19_no_flanking.txt", "r").read().upper()}
 BRCA1 = {"start": 41196312,
-         "seq": open("../resources/brca1_hg19_no_flanking.txt", "r").read().upper()}
+         "seq": open("../resources/genome_sequences/brca1_hg19_no_flanking.txt", "r").read().upper()}
 SNP_VCF = "VCFSA_data/all_snp_brca.vcf"
 INSERT_VCF = "VCFSA_data/insertion_brca.vcf"
 DELETE_VCF = "VCFSA_data/deletion_brca.vcf"

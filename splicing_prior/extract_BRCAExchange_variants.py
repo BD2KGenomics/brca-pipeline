@@ -26,7 +26,7 @@ def main():
             genome_coor = genome_coor.split("|")[0]
         chr, pos, refalt = genome_coor.replace("-", "").split(":")
         ref, alt = refalt.split(">")
-        chr = chr[:-2]
+        chr = chr[-2:]
         info = "Dummy=dummy"
         if ref == "":
             ref = "-"
