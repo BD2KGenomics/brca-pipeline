@@ -2,8 +2,7 @@ import fileinput
 import os
 import pdb
 
-import generate_BRCA_variant as gbv
-
+import hgvs_conversion as hc
 
 FILE = "/hive/groups/cgl/brca/release1.0/pipeline_output/merged_01Jul2016.csv"
 SNP_VCF = "VCFSA_data/brcaExchange_SNPs.vcf"
@@ -11,7 +10,7 @@ INDEL_VCF="VCFSA_data/brcaExchange_INDELs.vcf"
 
 
 def main():
-    gbv.write_header()
+    write_header()
     f = open(FILE, "r")
     f_snp = open(SNP_VCF + ".body", "w")
     f_indel = open(INDEL_VCF + ".body", "w")    
@@ -27,7 +26,8 @@ def main():
         chr, pos, refalt = genome_coor.replace("-", "").split(":")
         ref, alt = refalt.split(">")
         chr = chr[-2:]
-        info = "Dummy=dummy"
+        HGVS = hc.VCF_to_HGVS([chr, int(pos), ref, alt])
+        info = "{0}".format(HGVS)
         if ref == "":
             ref = "-"
         if alt == "":
@@ -58,7 +58,7 @@ def write_header(version="GRCh38"):
     with open('vcf_header.txt', 'w') as f_header:
         f_header.write("##fileformat=VCFv4.0\n")
         f_header.write("##reference={0}\n".format(version))
-        f_header.write("##INFO=<ID=Dummy,Number=.,Type=String,Description=\"\">\n")
+        f_header.write("##INFO=<ID=HGVS,Number=.,Type=String,Description=\"HGVS representation of this variant\">\n")
         f_header.write("\t".join(
             ["#CHROM", "POS", "ID", "REF", "ALT", "QUAL", "FILTER", "INFO\n"]))
         f_header.close()
