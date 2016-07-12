@@ -12,9 +12,9 @@ BRCA2 = {"start": 32889617,
          "seq": open("../resources/brca2_hg19_no_flanking.txt", "r").read().upper()}
 BRCA1 = {"start": 41196312,
          "seq": open("../resources/brca1_hg19_no_flanking.txt", "r").read().upper()}
-SNP_VCF = "all_snp_brca.vcf"
-INSERT_VCF = "insertion_brca.vcf"
-DELETE_VCF = "deletion_brca.vcf"
+SNP_VCF = "VCFSA_data/all_snp_brca.vcf"
+INSERT_VCF = "VCFSA_data/insertion_brca.vcf"
+DELETE_VCF = "VCFSA_data/deletion_brca.vcf"
 
 
 
@@ -46,21 +46,21 @@ def create_SNP_vcf():
     
     # merge header and body
     with open(SNP_VCF, "w") as file:
-        file_list = ["vcf_header.txt", SNP_VCF + ".body"]
+        file_list = ["VCFSA_data/vcf_header.txt", SNP_VCF + ".body"]
         input_lines = fileinput.input(file_list)
         file.writelines(input_lines)
-    for each_file in file_list:
-        os.remove(each_file)
+        os.remove(SNP_VCF + ".body")
 
 
-def write_header():
-    with open('vcf_header.txt', 'w') as f:
+def write_header(version="GRCh38"):
+    with open('VCFSA_data/vcf_header.txt', 'w') as f:
         f.write("##fileformat=VCFv4.0\n")
-        f.write("##reference=GRCh37\n")
+        f.write("##reference={0}\n".format(version))
         f.write("##INFO=<ID=Dummy,Number=.,Type=String,Description=\"\">\n")
         f.write("\t".join(
             ["#CHROM", "POS", "ID", "REF", "ALT", "QUAL", "FILTER", "INFO\n"]))
         f.close()
+    print "vcf dummy header written"
 
 def check_ref_correct(v):
     chr, pos, ref, alt = v
