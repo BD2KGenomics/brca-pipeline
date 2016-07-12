@@ -19,12 +19,13 @@ def get_transcript(name):
 def VCF_to_HGVS(genome_coor):
     chrom, pos, refalt = genome_coor.replace("-", "").split(":")
     ref, alt = refalt.split(">")
+    pos = int(pos)
     if chrom == "chr13":
         transcript = get_transcript("NM_000059")
     elif chrom == "chr17":
-        transcript = get_trascript("NM_007294")
+        transcript = get_transcript("NM_007294")
     else:
         raise Exception("chromsome name error")
-    hgvs_name = pyhgvs.format_hgvs_name(chrom, pos, ref, alt, genome, transcript)
+    hgvs_name = pyhgvs.format_hgvs_name(chrom, pos, ref, alt, HG38, transcript)
     return hgvs_name
 
