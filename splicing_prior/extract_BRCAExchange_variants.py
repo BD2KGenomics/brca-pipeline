@@ -39,13 +39,17 @@ def main():
         if ref == "None" or alt == "None":
             n_other += 1
             f_other.write(line)
-        elif len(ref) == 1 and len(alt) == 1:
-            if ref != alt:
-                n_snp += 1
-                f_snp.write(new_line)
-            else:
+        elif len(ref) == len(alt):
+            if ref == alt:
                 n_other += 1
                 f_other.write(line)
+            else:
+                if len(ref) == 1:    
+                    n_snp += 1
+                    f_snp.write(new_line)
+                else:
+                    n_other += 1
+                    f_other.write(line)
         else:
             n_indel += 1
             f_indel.write(new_line)    
