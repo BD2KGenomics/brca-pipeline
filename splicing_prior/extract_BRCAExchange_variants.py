@@ -27,15 +27,18 @@ def main():
             genome_coor = genome_coor.split("|")[0]
         chr, pos, refalt = genome_coor.replace("-", "").split(":")
         ref, alt = refalt.split(">")
-        chr = chr[-2:]
-        #HGVS = hc.VCF_to_HGVS([chr, int(pos), ref, alt])
-        HGVS = items[3] + ":" + items[4]
+        if items[3] == "-":
+            if ref == "None" or alt == "None" or ref == alt or (len(ref) == len(alt) and len(ref) > 1):  
+                HGVS = "."
+            else: HGVS = hc.VCF_to_HGVS([chr, int(pos), ref, alt])
+        else:
+            HGVS = items[3] + ":" + items[4]
         info = "{0}".format(HGVS)
         if ref == "":
             ref = "-"
         if alt == "":
             alt = "-"
-        new_line = "\t".join([chr, str(pos), ".", ref, alt, ".", ".", info]) + "\n"
+        new_line = "\t".join([chr[-2:], str(pos), ".", ref, alt, ".", ".", info]) + "\n"
         if ref == "None" or alt == "None":
             n_other += 1
             f_other.write(line)

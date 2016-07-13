@@ -18,9 +18,9 @@ def get_transcript(name):
 
 def VCF_to_HGVS(genome_coor):
     chrom, pos, ref, alt = genome_coor
-    if chrom == "13":
+    if chrom == "chr13":
         transcript = get_transcript("NM_000059")
-    elif chrom == "17":
+    elif chrom == "chr17":
         transcript = get_transcript("NM_007294")
     else:
         raise Exception("chromsome name error")
