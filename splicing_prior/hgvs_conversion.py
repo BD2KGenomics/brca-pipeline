@@ -17,9 +17,7 @@ def get_transcript(name):
     return transcripts.get(name)
 
 def VCF_to_HGVS(genome_coor):
-    chrom, pos, refalt = genome_coor.replace("-", "").split(":")
-    ref, alt = refalt.split(">")
-    pos = int(pos)
+    chrom, pos, ref, alt = genome_coor
     if chrom == "chr13":
         transcript = get_transcript("NM_000059")
     elif chrom == "chr17":
