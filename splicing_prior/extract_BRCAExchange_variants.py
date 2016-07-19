@@ -1,17 +1,28 @@
 import fileinput
 import os
 import pdb
+import argparse
 
 import hgvs_conversion as hc
 
-FILE = "/hive/groups/cgl/brca/release1.0/pipeline_output/merged_13Jul2016.csv"
+
+
+FILE = "/hive/groups/cgl/brca/release1.0/pipeline_output/merged_15Jul2016.csv"
 SNP_VCF = "VCFSA_data/brcaExchange_SNPs.vcf"
 INDEL_VCF="VCFSA_data/brcaExchange_INDELs.vcf"
 OTHER="VCFSA_data/brcaExchange_others.txt"
 
+
+parser = argparse.ArgumentParser(description="seperate brca exchange data to snps and indels")
+parser.add_argument("input", help="input file")
+args = parser.parse_args()
+
+
+
+
 def main():
     write_header()
-    f = open(FILE, "r")
+    f = open(args.input, "r")
     f_snp = open(SNP_VCF + ".body", "w")
     f_indel = open(INDEL_VCF + ".body", "w")    
     f_other = open(OTHER, "w")
