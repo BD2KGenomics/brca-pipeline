@@ -11,8 +11,7 @@ BRCA2_NO_FLANK = open("brca2_hg19_no_flanking.txt", "r").read()
 
 
 def main():
-    check_correct()
-
+    fetch()
 
 
 def check_correct():
