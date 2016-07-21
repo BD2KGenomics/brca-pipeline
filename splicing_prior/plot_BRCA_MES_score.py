@@ -1,5 +1,5 @@
 from matplotlib import pyplot as plt
-
+import numpy as np
 
 BRCA1 = "/cluster/home/mollyzhang/brca-pipeline/resources/genome_sequences/brca1_hg38_no_flanking.txt"
 BRCA2 = "/cluster/home/mollyzhang/brca-pipeline/resources/genome_sequences/brca2_hg38_no_flanking.txt"
@@ -7,15 +7,20 @@ BRCA2 = "/cluster/home/mollyzhang/brca-pipeline/resources/genome_sequences/brca2
 
 def main():
     plot_score("BRCA1", "3")    
-
+    plot_score("BRCA1", "5")    
+    plt.title("BRCA1")
+    plt.legend(["3 prime", "5 prime"])
+    plt.show()
 
 def plot_score(gene, direction):
     scores = []
     f = open("MES_data/{0}_{1}_score.txt".format(gene, direction), "r")
     for line in f:
         scores.append(float(line.strip().split("\t")[1]))
+    
+    scores = np.array(scores)
+    scores[scores<=5] = 5
     plt.plot(scores)
-    plt.show()
 
 
 def get_MES_inputfile(gene, direction):
