@@ -4,8 +4,8 @@ use strict;
 my $inputfile = $ARGV[0];
 my $usemaxent = 1;
 
-my %me2x5 = &makescorematrix('me2x5');
-my %seq = &makesequencematrix('splicemodels/splice5sequences');
+my %me2x5 = &makescorematrix('MaxEntScan/me2x5');
+my %seq = &makesequencematrix('MaxEntScan/splicemodels/splice5sequences');
 
 my %bgd;
 $bgd{'A'} = 0.27;
