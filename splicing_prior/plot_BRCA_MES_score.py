@@ -13,12 +13,12 @@ import subprocess
 BRCA1 = "../resources/genome_sequences/brca1_hg38_no_flanking.txt"
 BRCA2 = "../resources/genome_sequences/brca2_hg38_no_flanking.txt"
 REFSEQ = "../resources/refseq/hg38.BRCA.refGene.txt"
-
+MES_CUTOFF = 6  # MES scores lower than MES_cutoff won't be plotted
 
 def main():
     #create_MES_inputfile()
-    run_MaxEntScan()
-    #plot_score("BRCA1")
+    #run_MaxEntScan()
+    plot_score("BRCA1")
 
 def get_exon_boundaries(gene):
     """
@@ -28,29 +28,32 @@ def get_exon_boundaries(gene):
     brca2_refseq, brca1_refseq, dummy = open(REFSEQ, "r").read().split("\n")
     refseq = {"BRCA1": brca1_refseq.split("\t"),
               "BRCA2": brca2_refseq.split("\t")}
-    #exon_starts = refseq[gene][9][:-1].split(",") # splicing acceptors
-    #exon_ends = refseq[gene][10][:-1].split(",") # splicing donors
-    return refseq
-    #exon_starts, exon_ends
+    exon_starts = refseq[gene][9][:-1].split(",") # splicing acceptors
+    exon_ends = refseq[gene][10][:-1].split(",") # splicing donors
+    return exon_starts, exon_ends
 
 
 def plot_score(gene):
+    gene_strand = {"BRCA1": "-", "BRCA2": "+"}
     scores = get_MES_score(gene)
-    print len(scores['3'])
-    print len(scores['5'])
-#    plt.plot(scores)
-#    plt.title("BRCA1")
-#    plt.legend(["3 prime", "5 prime"])
-#    plt.show()
+    scores = scores[gene_strand[gene]]
+    plt.plot(scores["donor"])
+    plt.plot(scores["acceptor"])
+    plt.title(gene)
+    plt.legend(["donor", "acceptor"])
+    plt.show()
 
 
-def get_MES_score():
-    for direction in scores.keys():
-        f = open("MES_data/{0}_{1}_{2}.txt".format(gene, sj, strand), "r")
-        for line in f:
-            scores[direction].append(float(line.strip().split("\t")[1]))
-        scores[direction] = np.array(scores[direction])
-        scores[direction][scores[direction]<=6] = 6
+def get_MES_score(gene):
+    scores = {"+": {"donor": [], "acceptor": []},
+              "-": {"donor": [], "acceptor": []}}
+    for strand in scores.keys():
+        for sj in scores[strand].keys():
+            f = open("MES_data/score_{0}_{1}_{2}.txt".format(gene, sj, strand), "r")
+            for line in f:
+                scores[strand][sj].append(float(line.strip().split("\t")[1]))
+            scores[strand][sj] = np.array(scores[strand][sj])
+            scores[strand][sj][scores[strand][sj] <= MES_CUTOFF] = MES_CUTOFF
     return scores
 
 
