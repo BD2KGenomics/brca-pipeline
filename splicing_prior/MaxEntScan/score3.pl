@@ -51,7 +51,7 @@ sub hashseq{
 }
 
 sub makemaxentscores{
-    my $dir = "splicemodels/";
+    my $dir = "MaxEntScan/splicemodels/";
     my @list = ('me2x3acc1','me2x3acc2','me2x3acc3','me2x3acc4',
 		'me2x3acc5','me2x3acc6','me2x3acc7','me2x3acc8','me2x3acc9');
     my @metables;
