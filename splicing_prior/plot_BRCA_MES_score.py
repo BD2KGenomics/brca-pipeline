@@ -1,12 +1,13 @@
 """
 Note: these things are the same:
-3' of an intron == 5' of the next exon == splice acceptor == 23nt sequence
-5' of an intron == 3' of the previous exon == splice donor == 9nt sequence 
+3' of an intron == splice acceptor == 23nt sequence
+5' of an intron == splice donor == 9nt sequence 
 """
 
 from matplotlib import pyplot as plt
 import numpy as np
 from pprint import pprint as pp
+import subprocess
 
 
 BRCA1 = "../resources/genome_sequences/brca1_hg38_no_flanking.txt"
@@ -15,7 +16,8 @@ REFSEQ = "../resources/refseq/hg38.BRCA.refGene.txt"
 
 
 def main():
-    create_MES_inputfile()
+    #create_MES_inputfile()
+    run_MaxEntScan()
     #plot_score("BRCA1")
 
 def get_exon_boundaries(gene):
@@ -70,12 +72,19 @@ def create_MES_inputfile():
                 f_out.close()
 
 
-def run_MaxEntScan():
-    """"
-    run MaxEntScan by calling shell script
-    """
-    pass
-
+def run_MaxEntScan(): 
+    """" 
+    run MaxEntScan by calling perl script via subprocess module 
+    """ 
+    MES_dict = {"acceptor": "MaxEntScan/score3.pl", "donor": "MaxEntScan/score5.pl"} 
+    for gene in ["BRCA1", "BRCA2"]: 
+        for strand in ["+", "-"]: 
+            for sj, MES in MES_dict.iteritems(): 
+                inputfile = "MES_data/{0}_{1}_{2}.txt".format(gene, sj, strand)      
+                f_out = open("MES_data/score_{0}_{1}_{2}.txt".format(gene, sj, strand), "w")   
+                subprocess.call(["perl", MES, inputfile], stdout=f_out) 
+                f_out.close() 
+    return "Done" 
 
 
 def reverse_complement(sequence):
