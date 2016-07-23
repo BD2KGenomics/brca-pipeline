@@ -18,29 +18,59 @@ MES_CUTOFF = 6  # MES scores lower than MES_cutoff won't be plotted
 def main():
     #create_MES_inputfile()
     #run_MaxEntScan()
-    plot_score("BRCA1")
+    plot_score("BRCA2")
+    #print get_splice_loc("BRCA1")
 
-def get_exon_boundaries(gene):
+def get_splice_loc(gene):
     """
-    return splicing donor (5' end of intron) sites
-     and splicing acceptor (3' end of intron) list as two lists
+    return splicing donor (5' end of intron) sites' distance to start of gene
+    and splicing acceptor (3' end of intron) sites' distance to start of gene
     """
     brca2_refseq, brca1_refseq, dummy = open(REFSEQ, "r").read().split("\n")
     refseq = {"BRCA1": brca1_refseq.split("\t"),
               "BRCA2": brca2_refseq.split("\t")}
-    exon_starts = refseq[gene][9][:-1].split(",") # splicing acceptors
-    exon_ends = refseq[gene][10][:-1].split(",") # splicing donors
-    return exon_starts, exon_ends
+    gene_start = int(refseq[gene][4])
+    gene_length = int(refseq[gene][5]) - gene_start
+    exon_starts = [int(i) - gene_start for i in refseq[gene][9][:-1].split(",")] # splicing acceptors
+    exon_ends = [int(i) - gene_start for i in refseq[gene][10][:-1].split(",")] # splicing donors
+    exon_loc = []
+    intron_loc = []
+    for i in range(len(exon_starts)):
+        exon_loc += range(exon_starts[i], exon_ends[i])
+        if i == len(exon_starts) - 1:
+            break
+        intron_loc += range(exon_ends[i]+1, exon_starts[i+1])
+
+    return exon_loc, intron_loc, exon_starts, exon_ends 
 
 
 def plot_score(gene):
     gene_strand = {"BRCA1": "-", "BRCA2": "+"}
     scores = get_MES_score(gene)
     scores = scores[gene_strand[gene]]
-    plt.plot(scores["donor"])
-    plt.plot(scores["acceptor"])
+    exons, introns, acceptors, donors = get_splice_loc(gene)
+
+    figure = plt.figure(gene)
+    plt.subplot(2,1,1)
+    plt.bar(donors, [14] * len(donors), color="grey")
+    plt.plot(range(len(scores["donor"])), scores["donor"], color="r")
+    plt.scatter(exons, [14] * len(exons), marker="|", color="b") 
+    plt.ylim([MES_CUTOFF, 16])
+    plt.xlim([0, len(scores["donor"])])
     plt.title(gene)
-    plt.legend(["donor", "acceptor"])
+    plt.ylabel("MaxEntScan score")
+    plt.legend(["MES scores", "exon", "donor location"], prop={'size':10}, ncol=3)
+    
+    plt.subplot(2,1,2)
+    plt.bar(acceptors, [14] * len(acceptors), color="grey")
+    plt.plot(range(len(scores["acceptor"])), scores["acceptor"], color="r")
+    plt.scatter(exons, [14] * len(exons), marker="|", color="b") 
+    plt.ylim([MES_CUTOFF, 16])
+    plt.xlim([0, len(scores["acceptor"])])
+    plt.xlabel("Distance to start of gene")
+    plt.ylabel("MaxEntScan score")
+    plt.legend(["MES scores", "exon", "acceptor location"], prop={'size':10}, ncol=3)
+
     plt.show()
 
 
