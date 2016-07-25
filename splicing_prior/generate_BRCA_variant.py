@@ -1,12 +1,11 @@
 """
 1. generate all BRCA SNPs
-2. generate BRCA deletion variants up to size 10bp
-3. generate BRCA insertion variants up to size 3bp
+2. for each BRCA SNPs, create HGVS column
 """
 
 import fileinput
 import os
-
+import hgvs_conversion as hc
 
 BRCA2 = {"start": 32889617,
          "seq": open("../resources/genome_sequences/brca2_hg19_no_flanking.txt", "r").read().upper()}
@@ -39,7 +38,8 @@ def create_SNP_vcf():
             alts = 'AGTC'.replace(ref, '')
             check_ref_correct([chr, pos, ref, alts[0]])
             for alt in alts:
-                info = 'Dummy=dummy'
+                HGVS = hc.VCF_to_HGVS(["chr" + chr, pos, ref, alt], version="hg19")
+                info = 'HGVS={0}'.format(HGVS)
                 new_line = "\t".join([chr, str(pos), ".", ref, alt, ".", ".", info])
                 f_out.write(new_line + "\n")
     f_out.close()
@@ -56,11 +56,10 @@ def write_header(version="GRCh38"):
     with open('VCFSA_data/vcf_header.txt', 'w') as f:
         f.write("##fileformat=VCFv4.0\n")
         f.write("##reference={0}\n".format(version))
-        f.write("##INFO=<ID=Dummy,Number=.,Type=String,Description=\"\">\n")
+        f.write("##INFO=<ID=HGVS,Number=.,Type=String,Description=\"HGVS representation of this variant\">\n")
         f.write("\t".join(
             ["#CHROM", "POS", "ID", "REF", "ALT", "QUAL", "FILTER", "INFO\n"]))
         f.close()
-    print "vcf dummy header written"
 
 def check_ref_correct(v):
     chr, pos, ref, alt = v
