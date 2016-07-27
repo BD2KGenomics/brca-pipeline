@@ -7,6 +7,8 @@ from http://priors.hci.utah.edu/PRIORS/index.php
 import urllib
 from bs4 import BeautifulSoup
 import sys 
+import glob
+
 
 BASE_URL = "http://priors.hci.utah.edu/PRIORS/BRCA/"
 URL_PREFIX = {"donor": BASE_URL + "popdon.php?", 
@@ -14,7 +16,16 @@ URL_PREFIX = {"donor": BASE_URL + "popdon.php?",
 
 
 def main():
-    build_table() 
+    get_all_HGVS_positions("BRCA1")
+
+def get_all_HGVS_positions(gene):
+    filenames = glob.glob("html_data/*{0}*".format(gene))
+    positions = set([])
+    for name in filenames:
+        pos = name.split("?")[-1].split("&")[1].split("=")[-1]
+        positions.add(pos)
+    return positions
+
 
 
 def build_table():
