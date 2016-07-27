@@ -14,6 +14,29 @@ URL_PREFIX = {"donor": BASE_URL + "popdon.php?",
 
 
 def main():
+    build_table() 
+
+
+def build_table():
+
+    # acceptor
+    example = "html_data/popwtacc.php?gene=BRCA1&pos=999&exon=exon11&mut=3.html"
+    soup = BeautifulSoup(open(example, "r").read(), "html.parser")
+    wt = soup.findAll("td")[7]
+    mutant = soup.findAll("td")[11]
+    print wt
+    print mutant
+
+    # donor
+    example = "html_data/popdon.php?gene=BRCA1&pos=999&exon=exon11&mut=3.html"
+    soup = BeautifulSoup(open(example, "r").read(), "html.parser")
+    wt = soup.findAll("td")[8]
+    mutant = soup.findAll("td")[13]
+    print wt
+    print mutant
+
+
+def download():
     base_url = "http://priors.hci.utah.edu/PRIORS/BRCA/viewer.php?gene={0}&exon={1}"
     for gene in ["BRCA1", "BRCA2"]:
         page = urllib.urlopen(base_url.format(gene, "exon2")).read()
@@ -32,7 +55,8 @@ def main():
                 for splice_type, url_prefix in URL_PREFIX.iteritems():
                     for mutation in ["&mut=1", "&mut=2", "&mut=3"]:
                         this_url = url_prefix + position + mutation
-                        with open("html_data/" + position + mutation + ".html", "w") as f:
+                        filename = "html_data/" + this_url.split("/")[-1] + ".html"
+                        with open(filename, "w") as f:
                             f.write(urllib.urlopen(this_url).read())
                             f.close()
 
