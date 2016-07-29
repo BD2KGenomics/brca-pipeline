@@ -19,19 +19,30 @@ def main():
 
 
 def combine_tables():
-    files = sorted(glob.glob("scraped_data/BRCA1*"))
+    files = sorted(glob.glob("scraped_data/BRCA*"))
     f_out = open("scraped_data/hci_priors_combined.txt", "w")
     f_out.write("HGVS\tMES_Donor\tMES_Acceptor\tGene\tExon\n")
-    for file in files:
-        gene, exon = file.split("/")[-1].split(".")[0].split("_")
-        f_in = open(file, "r") 
-        for index, line in enumerate(f_in):
-            if index == 0:
-                continue
-            line = line.strip().split("/t") + [gene, exon[4:]]
-            f_out.write("\t".join(line) + "\n")
-        f_in.close()
+    exons = get_exon_numbers(files)
+    for gene, exon_list in exons.iteritems(): 
+        for exon_number in sorted(exon_list):
+            f_in = open("scraped_data/{0}_exon{1}.txt".format(gene, exon_number), "r") 
+            for index, line in enumerate(f_in):
+                if index == 0:
+                    continue
+                line = line.strip().split("/t") + [gene, str(exon_number)]
+                f_out.write("\t".join(line) + "\n")
+            f_in.close()
     f_out.close()
+
+
+def get_exon_numbers(filenames):
+    exons = {"BRCA1": [], "BRCA2": []}
+    for name in filenames:
+        exons[name.split("/")[1][:5]].append(int(name.split("_")[-1].split(".")[0][4:]))
+    return exons
+
+
+
 
 
 def download():
