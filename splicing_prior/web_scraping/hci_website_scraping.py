@@ -8,13 +8,30 @@ import urllib
 from bs4 import BeautifulSoup
 import sys 
 import pprint
+import glob
 
 BASE_URL = "http://priors.hci.utah.edu/PRIORS/BRCA/"
 
 
 
 def main():
-    download()
+    combine_tables()
+
+
+def combine_tables():
+    files = sorted(glob.glob("scraped_data/BRCA1*"))
+    f_out = open("scraped_data/hci_priors_combined.txt", "w")
+    f_out.write("HGVS\tMES_Donor\tMES_Acceptor\tGene\tExon\n")
+    for file in files:
+        gene, exon = file.split("/")[-1].split(".")[0].split("_")
+        f_in = open(file, "r") 
+        for index, line in enumerate(f_in):
+            if index == 0:
+                continue
+            line = line.strip().split("/t") + [gene, exon[4:]]
+            f_out.write("\t".join(line) + "\n")
+        f_in.close()
+    f_out.close()
 
 
 def download():
