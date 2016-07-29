@@ -26,17 +26,18 @@ def download():
             exon = exon_tag.a.contents[0]
             print "\n", gene, "exon{0}".format(exon)
             f_out = open("scraped_data/{0}_exon{1}.txt".format(gene, exon), "w")
+            f_out.write("HGVS\tMES_Donor\tMES_Acceptor\n")
             exon_url = base_url.format(gene, "exon" + exon)
             exon_soup = BeautifulSoup(urllib.urlopen(exon_url).read(), "html.parser")
             sequence = exon_soup.findAll("a", {"class": "seq"})
             for base in sequence:
+                sys.stdout.write(".")
+                sys.stdout.flush()
                 position = base.get('href').split("?")[1]
                 for mutation in ["&mut=1", "&mut=2", "&mut=3"]:
                     create_line(f_out, position, mutation)
-                break
-            break
             f_out.close()
-        break
+
 
 def create_line(f, pos, mut):
     for splice_type in ["popdon?", "popwtacc?"]:
