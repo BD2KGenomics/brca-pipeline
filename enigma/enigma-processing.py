@@ -6,9 +6,6 @@ brcaexchange variant merging pipeline
 import glob
 import numpy as np
 from pprint import pprint as pp
-import hgvs.dataproviders.uta
-import hgvs.parser
-import hgvs.variantmapper
 import pyhgvs
 import pyhgvs.utils as pyhgvs_utils
 import re
@@ -36,6 +33,8 @@ COLUMNS_TO_SAVE = np.array(["Gene_symbol", #Genomic_Coordinate
 
 OUTPUT_COLUMNS = [i + "_cDNA" if i == "HGVS" else i for i in COLUMNS_TO_SAVE] + ["HGVS_protein"]
 OUTPUT_COLUMNS.insert(2, "Genomic_Coordinate")
+GENOME = SequenceFileDB('/cluster/home/mollyzhang/reference_genome/hg38/hg38.fa')
+REFGENE = "../resources/refseq/hg38.BRCA.refGene.txt"
 
 
 
@@ -55,13 +54,16 @@ def main():
             continue
         if len(items) != len(columns):
             continue
-        HGVS_cDNA = items[column_idx["Reference_sequence"]] + ":" + items[column_idx["HGVS"]
-        HGVS_protein, Genome_coor = convert_hgvs(HGVS_cDNA)
         OMIM_id_index = column_idx["Condition_ID_value"]
         items[OMIM_id_index] = convert_OMIM_id(items[OMIM_id_index])
-        new_line = "\t".join(list(items[index_to_save])) + "\n"
-        f_out.write(new_line)
-        
+        items = items[index_to_save]
+        HGVS_cDNA = (items[column_idx["Reference_sequence"]].split(".")[0] +
+                     ":" + items[column_idx["HGVS"]])
+        genome_coor = get_genome_coor(HGVS_cDNA)
+        items.insert(2, genome_coor)
+        HGVS_protein = 
+        #new_line = "\t".join(list(items[index_to_save])) + "\n"
+        #f_out.write(new_line)
     f_in.close()
     f_out.close()
 
@@ -75,38 +77,17 @@ def convert_OMIM_id(OMIM_id):
         raise Exception("OMIM id not found (" + OMIM_id + ")")
 
 
-def convert_hgvs(hgvs_c):
-    hp = hgvs.parser.Parser()
-    hgvs_c = hp.parse_hgvs_variant(hgvs_c)
-    hdp = hgvs.dataproviders.uta.connect()
-    evm = hgvs.variantmapper.EasyVariantMapper(hdp,
-        primary_assembly='GRCh38', alt_aln_method='splign')
-    #hgvs_g = evm.c_to_g(hgvs_c)
-    hgvs_p = evm.c_to_p(hgvs_c)
-    hgvs_p_no_transcript = str(hgvs_p).split(":")[1]
-    genome_coordinate = get_genome_coor(str(hgvs_c))
-    return [hgvs_p_no_transcript, genome_coordinate]
-
 def get_genome_coor(hgvs_c):
-    genome = SequenceFileDB('data/hg19.fa')
-    refGene = "/Users/Molly/Desktop/web-dev/hgvs_counsyl/hgvs/pyhgvs/data/genes.refGene"
-    with open(refGene) as infile:
+    with open(REFGENE) as infile:
         transcripts = pyhgvs_utils.read_transcripts(infile)
-
     def get_transcript(name):
         return transcripts.get(name)
-    
     chrom, offset, ref, alt = pyhgvs.parse_hgvs_name(
-        hgvs_c, genome, get_transcript=get_transcript)
+        hgvs_c, GENOME, get_transcript=get_transcript)
     return chrom + ":" + str(offset) + ":" + ref + ">" + alt
 
 
-def parse_hgvs_g(hgvs_g):
-    text = re.search("NC_0000(1[37])\.10:g\.([0-9]+)([AGTC]>[AGTC])", hgvs_g)
-    chrom = text.group(1)
-    position = text.group(2)
-    change = text.group(3)
-    return "chr" + chrom + ":" + position + ":" + change
+
 
 if __name__ == "__main__":
     main()
