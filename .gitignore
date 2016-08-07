@@ -1,4 +1,5 @@
 # Pycharm thing
+*env
 *.idea
 *data/
 *.ipynb_checkpoints
