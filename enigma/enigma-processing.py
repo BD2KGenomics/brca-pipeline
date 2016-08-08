@@ -5,12 +5,17 @@ brcaexchange variant merging pipeline
 
 import glob
 import numpy as np
+import sys
+import re
 from pprint import pprint as pp
 import pyhgvs
 import pyhgvs.utils as pyhgvs_utils
-import re
-import sys
 from pygr.seqdb import SequenceFileDB
+import hgvs.dataproviders.uta
+import hgvs.parser
+import hgvs.variantmapper
+
+
 
 COLUMNS_TO_SAVE = np.array(["Gene_symbol", #Genomic_Coordinate
                             "Reference_sequence",
@@ -34,8 +39,9 @@ COLUMNS_TO_SAVE = np.array(["Gene_symbol", #Genomic_Coordinate
 OUTPUT_COLUMNS = [i + "_cDNA" if i == "HGVS" else i for i in COLUMNS_TO_SAVE] + ["HGVS_protein"]
 OUTPUT_COLUMNS.insert(2, "Genomic_Coordinate")
 GENOME = SequenceFileDB('/cluster/home/mollyzhang/reference_genome/hg38/hg38.fa')
-REFGENE = "../resources/refseq/hg38.BRCA.refGene.txt"
-
+HDP = hgvs.dataproviders.uta.connect()
+EVM = hgvs.variantmapper.EasyVariantMapper(HDP,
+    primary_assembly='GRCh37', alt_aln_method='splign')
 
 
 def main():
@@ -56,14 +62,15 @@ def main():
             continue
         OMIM_id_index = column_idx["Condition_ID_value"]
         items[OMIM_id_index] = convert_OMIM_id(items[OMIM_id_index])
-        items = items[index_to_save]
-        HGVS_cDNA = (items[column_idx["Reference_sequence"]].split(".")[0] +
+        HGVS_cDNA = (items[column_idx["Reference_sequence"]] +
                      ":" + items[column_idx["HGVS"]])
         genome_coor = get_genome_coor(HGVS_cDNA)
+        items = list(items[index_to_save])
         items.insert(2, genome_coor)
-        HGVS_protein = 
-        #new_line = "\t".join(list(items[index_to_save])) + "\n"
-        #f_out.write(new_line)
+        HGVS_protein = HGVS_cDNA_to_protein(HGVS_cDNA) 
+        items.append(HGVS_protein)
+        new_line = "\t".join(list(items)) + "\n"
+        f_out.write(new_line)
     f_in.close()
     f_out.close()
 
@@ -78,15 +85,23 @@ def convert_OMIM_id(OMIM_id):
 
 
 def get_genome_coor(hgvs_c):
-    with open(REFGENE) as infile:
-        transcripts = pyhgvs_utils.read_transcripts(infile)
-    def get_transcript(name):
-        return transcripts.get(name)
     chrom, offset, ref, alt = pyhgvs.parse_hgvs_name(
         hgvs_c, GENOME, get_transcript=get_transcript)
     return chrom + ":" + str(offset) + ":" + ref + ">" + alt
 
 
+def HGVS_cDNA_to_protein(hgvs_c):
+    hp = hgvs.parser.Parser()
+    hgvs_c = hp.parse_hgvs_variant(hgvs_c)
+    hgvs_p = str(EVM.c_to_p(hgvs_c)).split(":")[1]
+    return hgvs_p
+
+
+def get_transcript(name):
+    REFGENE = "../resources/refseq/hg38.BRCA.refGene.txt"
+    with open(REFGENE) as infile:
+        TRANSCRIPTS = pyhgvs_utils.read_transcripts(infile)
+    return TRANSCRIPTS.get(name)
 
 
 if __name__ == "__main__":
