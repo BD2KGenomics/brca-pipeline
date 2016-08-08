@@ -42,36 +42,43 @@ GENOME = SequenceFileDB('/cluster/home/mollyzhang/reference_genome/hg38/hg38.fa'
 HDP = hgvs.dataproviders.uta.connect()
 EVM = hgvs.variantmapper.EasyVariantMapper(HDP,
     primary_assembly='GRCh37', alt_aln_method='splign')
+HP = hgvs.parser.Parser()
 
 
 def main():
-    raw_files = glob.glob("raw_files/*batch1*tsv")
+    raw_files = sorted(glob.glob("raw_files/*batch*tsv"))
     f_out = open("output/ENIMGA_last_updated_05-21-2016.tsv", "w")
     f_out.write("\t".join(OUTPUT_COLUMNS) + "\n")
-    f_in = open(raw_files[0], "r")
-    for index, line in enumerate(f_in):
-        if index in [0, 1, 3, 4]:
-            continue
-        items = np.array(line.rstrip().split("\t"))
-        if index == 2:
-            columns = np.array([i.replace(" ", "_") for i in items])
-            index_to_save = [np.where(columns==i)[0][0] for i in COLUMNS_TO_SAVE]
-            column_idx = dict(zip(COLUMNS_TO_SAVE, index_to_save))
-            continue
-        if len(items) != len(columns):
-            continue
-        OMIM_id_index = column_idx["Condition_ID_value"]
-        items[OMIM_id_index] = convert_OMIM_id(items[OMIM_id_index])
-        HGVS_cDNA = (items[column_idx["Reference_sequence"]] +
-                     ":" + items[column_idx["HGVS"]])
-        genome_coor = get_genome_coor(HGVS_cDNA)
-        items = list(items[index_to_save])
-        items.insert(2, genome_coor)
-        HGVS_protein = HGVS_cDNA_to_protein(HGVS_cDNA) 
-        items.append(HGVS_protein)
-        new_line = "\t".join(list(items)) + "\n"
-        f_out.write(new_line)
-    f_in.close()
+    for filename in raw_files:
+        f_in = open(filename, "r")
+        print filename
+        for index, line in enumerate(f_in):
+            print index
+            if index in [0, 1, 3, 4]:
+                continue
+            items = np.array(line.rstrip().split("\t"))
+            if index == 2:
+                columns = np.array([i.replace(" ", "_") for i in items])
+                index_to_save = [np.where(columns==i)[0][0] for i in COLUMNS_TO_SAVE]
+                column_idx = dict(zip(COLUMNS_TO_SAVE, index_to_save))
+                continue
+            if len(items) != len(columns):
+                continue
+            OMIM_id_index = column_idx["Condition_ID_value"]
+            items[OMIM_id_index] = convert_OMIM_id(items[OMIM_id_index])
+            HGVS_cDNA = (items[column_idx["Reference_sequence"]] +
+                         ":" + items[column_idx["HGVS"]])
+            try:
+                genome_coor, HGVS_p = convert_HGVS(HGVS_cDNA)
+            except:
+                # TODO: better handling of misnamed HGVS string
+                genome_coor, HGVS_p = create_None_filler() 
+            final_items = list(items[index_to_save])
+            final_items.insert(2, genome_coor)
+            final_items.append(HGVS_p)
+            new_line = "\t".join(list(final_items)) + "\n"
+            f_out.write(new_line)
+        f_in.close()
     f_out.close()
 
 
@@ -84,15 +91,22 @@ def convert_OMIM_id(OMIM_id):
         raise Exception("OMIM id not found (" + OMIM_id + ")")
 
 
-def get_genome_coor(hgvs_c):
+def convert_HGVS(hgvs_c):
     chrom, offset, ref, alt = pyhgvs.parse_hgvs_name(
         hgvs_c, GENOME, get_transcript=get_transcript)
-    return chrom + ":" + str(offset) + ":" + ref + ">" + alt
+    genome_coor = chrom + ":" + str(offset) + ":" + ref + ">" + alt
+    HGVS_p = HGVS_cDNA_to_protein(hgvs_c)
+    return genome_coor, HGVS_p
+
+
+def create_None_filler():
+    genome_coor = "None:None:None>None"
+    HGVS_p = "None"
+    return genome_coor, HGVS_p
 
 
 def HGVS_cDNA_to_protein(hgvs_c):
-    hp = hgvs.parser.Parser()
-    hgvs_c = hp.parse_hgvs_variant(hgvs_c)
+    hgvs_c = HP.parse_hgvs_variant(hgvs_c)
     hgvs_p = str(EVM.c_to_p(hgvs_c)).split(":")[1]
     return hgvs_p
 
