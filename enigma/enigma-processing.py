@@ -74,7 +74,7 @@ def main():
                 # TODO: better handling of misnamed HGVS string
                 genome_coor, HGVS_p = create_None_filler() 
             final_items = list(items[index_to_save])
-            final_items.insert(2, genome_coor)
+            final_items.insert(3, genome_coor)
             final_items.append(HGVS_p)
             new_line = "\t".join(list(final_items)) + "\n"
             f_out.write(new_line)
