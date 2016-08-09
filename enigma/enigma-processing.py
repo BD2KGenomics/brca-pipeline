@@ -37,7 +37,7 @@ COLUMNS_TO_SAVE = np.array(["Gene_symbol", #Genomic_Coordinate
                             "ClinVarAccession"]) #"HGVS_protein"
 
 OUTPUT_COLUMNS = [i + "_cDNA" if i == "HGVS" else i for i in COLUMNS_TO_SAVE] + ["HGVS_protein"]
-OUTPUT_COLUMNS.insert(2, "Genomic_Coordinate")
+OUTPUT_COLUMNS.insert(3, "Genomic_Coordinate")
 GENOME = SequenceFileDB('/cluster/home/mollyzhang/reference_genome/hg38/hg38.fa')
 HDP = hgvs.dataproviders.uta.connect()
 EVM = hgvs.variantmapper.EasyVariantMapper(HDP,
