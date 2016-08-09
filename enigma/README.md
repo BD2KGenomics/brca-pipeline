@@ -20,7 +20,7 @@ raw_files/ENIGMA_SubmissionClinVar_2016-05-31_ncbi.xlsx
 
     `virtualenv env`
 
-    `source env/bin/activat`
+    `source env/bin/activate`
 
     `cd env`
 
