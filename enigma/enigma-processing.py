@@ -37,7 +37,7 @@ COLUMNS_TO_SAVE = np.array(["Gene_symbol", #Genomic_Coordinate
                             "ClinVarAccession"]) #"HGVS_protein"
 
 OUTPUT_COLUMNS = [i + "_cDNA" if i == "HGVS" else i for i in COLUMNS_TO_SAVE] + ["HGVS_protein"]
-OUTPUT_COLUMNS.insert(3, "Genomic_Coordinate")
+OUTPUT_COLUMNS.insert(1, "Genomic_Coordinate")
 GENOME = SequenceFileDB('/cluster/home/mollyzhang/reference_genome/hg38/hg38.fa')
 HDP = hgvs.dataproviders.uta.connect()
 EVM = hgvs.variantmapper.EasyVariantMapper(HDP,
@@ -74,7 +74,7 @@ def main():
                 # TODO: better handling of misnamed HGVS string
                 genome_coor, HGVS_p = create_None_filler() 
             final_items = list(items[index_to_save])
-            final_items.insert(3, genome_coor)
+            final_items.insert(1, genome_coor)
             final_items.append(HGVS_p)
             new_line = "\t".join(list(final_items)) + "\n"
             f_out.write(new_line)
