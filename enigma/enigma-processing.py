@@ -47,7 +47,7 @@ HP = hgvs.parser.Parser()
 
 def main():
     raw_files = sorted(glob.glob("raw_files/*batch*tsv"))
-    f_out = open("output/ENIMGA_last_updated_05-21-2016.tsv", "w")
+    f_out = open("output/ENIGMA_last_updated_05-21-2016.tsv", "w")
     f_out.write("\t".join(OUTPUT_COLUMNS) + "\n")
     for filename in raw_files:
         f_in = open(filename, "r")
